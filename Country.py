@@ -269,22 +269,6 @@ class gps_get():
             return a or b
         except Exception:
             return False
-    # @property
-    # def get_satellites(self):
-    #     if self.session is None:
-    #         return False
-    #     try:
-    #         a = False
-    #         for _ in range(10):
-    #             report = self.session.next()
-    #             if report['class'] == 'SKY':
-    #                 satelites = report.get('satellites', [])
-    #             if satelites != []:
-    #                 self.satelites = satelites
-    #                 a = True
-    #         return a
-    #     except Exception:
-    #         return False
     @property
     def has_fix(self):
         return self.fix >= 2 and self.lat is not None and self.lon is not None

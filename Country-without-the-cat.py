@@ -244,8 +244,7 @@ class gps_get():
         try:
             a = False
             b = False
-            timeout = time.time() + 0.8
-            while time.time() < timeout:
+            for _ in range(20):
                 report = self.session.next()
                 if report['class'] == 'TPV':
                     self.fix   = getattr(report, 'mode',  1)
@@ -267,8 +266,6 @@ class gps_get():
                     if satelites != []:
                         self.satelites = satelites
                     b = True
-                if a and b:
-                    break
             return a or b
         except Exception:
             return False
