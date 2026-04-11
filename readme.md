@@ -22,3 +22,6 @@ python3 Country.py # or whatever you save this file as
 Thats my cat if you don't like him just download the version without him<br>
 Here is his photo<br>
 <img src="./images/cat.jpg" alt="cat photo" width ="400px">
+
+# WHY DID I MAKE THIS?
+I wanted to have a nice GPS app for my Hackberry Pi Zero
