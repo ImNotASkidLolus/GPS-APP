@@ -22,7 +22,7 @@ python3 Country.py # or whatever you save this file as
 ```
 
 # WHAT'S WITH THE CAT?
-Thats my cat if you don't like him just download the version without him<br>
+Thats my cat Kuki if you don't like him just download the version without him<br>
 Here is his photo<br>
 <img src="./images/cat.jpg" alt="cat photo" width ="400px">
 
