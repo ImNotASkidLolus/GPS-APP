@@ -243,7 +243,9 @@ class gps_get():
             return False; 
         try:
             a = False
-            for _ in range(10):
+            b = False
+            timeout = time.time() + 0.8
+            while time.time() < timeout:
                 report = self.session.next()
                 if report['class'] == 'TPV':
                     self.fix   = getattr(report, 'mode',  1)
@@ -258,29 +260,34 @@ class gps_get():
                 elif report['class'] == 'SKY':
                     usat = report.get('uSat', None)
                     nsat = report.get('nSat', None)
+                    satelites = report.get('satellites', [])
                     if nsat and usat != None:
                         self.nsat = nsat
                         self.usat = usat
-                    a = True
-            return a
+                    if satelites != []:
+                        self.satelites = satelites
+                    b = True
+                if a and b:
+                    break
+            return a or b
         except Exception:
             return False
-    @property
-    def get_satellites(self):
-        if self.session is None:
-            return False
-        try:
-            a = False
-            for _ in range(10):
-                report = self.session.next()
-                if report['class'] == 'SKY':
-                    satelites = report.get('satellites', [])
-                if satelites != []:
-                    self.satelites = satelites
-                    a = True
-            return a
-        except Exception:
-            return False
+    # @property
+    # def get_satellites(self):
+    #     if self.session is None:
+    #         return False
+    #     try:
+    #         a = False
+    #         for _ in range(10):
+    #             report = self.session.next()
+    #             if report['class'] == 'SKY':
+    #                 satelites = report.get('satellites', [])
+    #             if satelites != []:
+    #                 self.satelites = satelites
+    #                 a = True
+    #         return a
+    #     except Exception:
+    #         return False
     @property
     def has_fix(self):
         return self.fix >= 2 and self.lat is not None and self.lon is not None
@@ -400,7 +407,7 @@ def __main__(stdscr):
 
         found_satelites_box.addstr(1, 5, " Satelites found: ", curses.color_pair(1))
         i = 2
-        if (gps.get_satellites):
+        if (fix):
             sat = get_satelite_info()
             if gps.nsat == 0:
                 found_satelites_box.addstr(2 , 2, f"ID: N/A  ", curses.color_pair(4))
@@ -453,7 +460,7 @@ def __main__(stdscr):
             
             main_box.erase()
             draw_main_box()
-            if gps.get_satellites:
+            if fix:
                 found_satelites_box.erase()
                 draw_satelite_info()
             time_box.addstr(2,1, f"{gps.time}", curses.color_pair(4))
