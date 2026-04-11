@@ -242,7 +242,8 @@ class gps_get():
         if self.session is None:
             return False; 
         try:
-            for _ in range(20):
+            a = False
+            for _ in range(10):
                 report = self.session.next()
                 if report['class'] == 'TPV':
                     self.fix   = getattr(report, 'mode',  1)
@@ -253,34 +254,33 @@ class gps_get():
                     self.time = getattr(report, 'time', datetime.datetime.now())
                     self.heading = getattr(report, 'track', 0)
                     self.climb = getattr(report, 'climb', "N/A")
-                    return True
+                    a = True
                 elif report['class'] == 'SKY':
                     usat = report.get('uSat', None)
                     nsat = report.get('nSat', None)
-                    satelites = report.get('satellites', [])
                     if nsat and usat != None:
                         self.nsat = nsat
                         self.usat = usat
-                    if satelites != []:
-                        self.satelites=satelites
-                    return True
+                    a = True
+            return a
         except Exception:
             return False
-    # @property
-    # def get_satellites(self):
-    #     if self.session is None:
-    #         return False
-    #     try:
-    #         a = False
-    #         report = self.session.next()
-    #         if report['class'] == 'SKY':
-    #             satelites = report.get('satellites', [])
-    #         if satelites != []:
-    #             self.satelites = satelites
-    #             a = True
-    #         return a
-    #     except Exception:
-    #         return False
+    @property
+    def get_satellites(self):
+        if self.session is None:
+            return False
+        try:
+            a = False
+            for _ in range(10):
+                report = self.session.next()
+                if report['class'] == 'SKY':
+                    satelites = report.get('satellites', [])
+                if satelites != []:
+                    self.satelites = satelites
+                    a = True
+            return a
+        except Exception:
+            return False
     @property
     def has_fix(self):
         return self.fix >= 2 and self.lat is not None and self.lon is not None
@@ -400,7 +400,7 @@ def __main__(stdscr):
 
         found_satelites_box.addstr(1, 5, " Satelites found: ", curses.color_pair(1))
         i = 2
-        if (fix):
+        if (gps.get_satellites):
             sat = get_satelite_info()
             if gps.nsat == 0:
                 found_satelites_box.addstr(2 , 2, f"ID: N/A  ", curses.color_pair(4))
@@ -420,7 +420,7 @@ def __main__(stdscr):
 
 
     #=======================KUKI THE CAT BOX=================================#
-    cat_box = curses.newwin(16, 30, 29, 2)
+    cat_box = curses.newwin(15, 30, 29, 2)
     cat_box.addstr(0, 0, "    _", curses.color_pair(7))
     cat_box.addstr(1, 0, "    \`*-", curses.color_pair(7))
     cat_box.addstr(2, 0, "    )  _`-.", curses.color_pair(7))
@@ -474,7 +474,7 @@ def __main__(stdscr):
             
             main_box.erase()
             draw_main_box()
-            if fix:
+            if gps.get_satellites:
                 found_satelites_box.erase()
                 draw_satelite_info()
             time_box.addstr(2,1, f"{gps.time}", curses.color_pair(4))

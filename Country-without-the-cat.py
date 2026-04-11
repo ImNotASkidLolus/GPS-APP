@@ -366,12 +366,12 @@ def __main__(stdscr):
         main_box.addstr(12,2+len("satellites found: "), f"{gps.nsat}", curses.color_pair(4))
     draw_main_box()
     #==================CURRENT TIME BOX======================#
-    time_box = curses.newwin(4, 28, 15, int(cols/2 +3))
+    time_box = curses.newwin(4, 28, 15, int(cols/2 +4))
     time_box.attron(curses.color_pair(2))
     time_box.box()
     time_box.attroff(curses.color_pair(2))
 
-    time_box.addstr(1, 5, " Current GPS time: ", curses.color_pair(1))
+    time_box.addstr(1, 2, " Current GPS time(UTC): ", curses.color_pair(1))
     time_box.addstr(2, 1, f"{gps.time}", curses.color_pair(4))
 
     #===================HEADER TEXT BOX======================#
@@ -392,7 +392,7 @@ def __main__(stdscr):
 
 
     #==================SATELLITE INFO BOX===================#
-    found_satelites_box = curses.newwin(11, 28, 18, int(cols/2 +3))
+    found_satelites_box = curses.newwin(10, 28, 19, int(cols/2 +4))
     def draw_satelite_info():
         found_satelites_box.attron(curses.color_pair(2))
         found_satelites_box.box()
@@ -409,7 +409,7 @@ def __main__(stdscr):
                 for prn, used in sat:
                     found_satelites_box.addstr(i , 2, f"ID: {prn}  ", curses.color_pair(4))
                     found_satelites_box.addstr(i , 9 + len(str(prn)), f"USED: {used}", curses.color_pair(4))
-                    if i < 9:
+                    if i < 8:
                         i = i+1
                     else:
                         i = 2
