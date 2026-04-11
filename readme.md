@@ -1,8 +1,8 @@
 # GPS APP FOR TERMINAL IN PYTHON
 
 The app was basically made for my hackberry and was not tested for other devices, but probably this code works for every system that will run gpsd(GPS daemon). Basically all unix based systems Mac, Linux, Free BSD. Please notify me for any issues of bugs to fix or maybe even features to add ;)
-<img src="./images/image.png" alt="main display image" width="700px">
-<img src="./images/hackberry.jpeg" alt="main display image" width="700px">
+<img src="./images/image.png" alt="main display image" width="500px">
+<img src="./images/hackberry.jpeg" alt="main display image" width="500px">
 
 # USAGE
 You have to have gps daemon installed(gpsd)
