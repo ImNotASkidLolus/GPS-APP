@@ -15,5 +15,5 @@ pip3 install gps
 ```
 # WHAT'S WITH THE CAT?
 Thats my cat if you don't like him just download the version without him<br>
-Here is his photo
+Here is his photo<br>
 <img src="./images/cat.jpg" alt="cat photo" width ="400px">
