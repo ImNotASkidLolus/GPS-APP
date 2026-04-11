@@ -242,8 +242,7 @@ class gps_get():
         if self.session is None:
             return False; 
         try:
-            a = False
-            for _ in range(10):
+            for _ in range(20):
                 report = self.session.next()
                 if report['class'] == 'TPV':
                     self.fix   = getattr(report, 'mode',  1)
@@ -254,33 +253,34 @@ class gps_get():
                     self.time = getattr(report, 'time', datetime.datetime.now())
                     self.heading = getattr(report, 'track', 0)
                     self.climb = getattr(report, 'climb', "N/A")
-                    a = True
+                    return True
                 elif report['class'] == 'SKY':
                     usat = report.get('uSat', None)
                     nsat = report.get('nSat', None)
+                    satelites = report.get('satellites', [])
                     if nsat and usat != None:
                         self.nsat = nsat
                         self.usat = usat
-                    a = True
-            return a
+                    if satelites != []:
+                        self.satelites=satelites
+                    return True
         except Exception:
             return False
-    @property
-    def get_satellites(self):
-        if self.session is None:
-            return False
-        try:
-            a = False
-            for _ in range(10):
-                report = self.session.next()
-                if report['class'] == 'SKY':
-                    satelites = report.get('satellites', [])
-                if satelites != []:
-                    self.satelites = satelites
-                    a = True
-            return a
-        except Exception:
-            return False
+    # @property
+    # def get_satellites(self):
+    #     if self.session is None:
+    #         return False
+    #     try:
+    #         a = False
+    #         report = self.session.next()
+    #         if report['class'] == 'SKY':
+    #             satelites = report.get('satellites', [])
+    #         if satelites != []:
+    #             self.satelites = satelites
+    #             a = True
+    #         return a
+    #     except Exception:
+    #         return False
     @property
     def has_fix(self):
         return self.fix >= 2 and self.lat is not None and self.lon is not None
@@ -366,12 +366,12 @@ def __main__(stdscr):
         main_box.addstr(12,2+len("satellites found: "), f"{gps.nsat}", curses.color_pair(4))
     draw_main_box()
     #==================CURRENT TIME BOX======================#
-    time_box = curses.newwin(4, 28, 15, int(cols/2 +3))
+    time_box = curses.newwin(4, 28, 15, int(cols/2 +4))
     time_box.attron(curses.color_pair(2))
     time_box.box()
     time_box.attroff(curses.color_pair(2))
 
-    time_box.addstr(1, 5, " Current GPS time: ", curses.color_pair(1))
+    time_box.addstr(1, 2, " Current GPS time(UTC): ", curses.color_pair(1))
     time_box.addstr(2, 1, f"{gps.time}", curses.color_pair(4))
 
     #===================HEADER TEXT BOX======================#
@@ -392,7 +392,7 @@ def __main__(stdscr):
 
 
     #==================SATELLITE INFO BOX===================#
-    found_satelites_box = curses.newwin(11, 28, 18, int(cols/2 +3))
+    found_satelites_box = curses.newwin(10, 28, 19, int(cols/2 +4))
     def draw_satelite_info():
         found_satelites_box.attron(curses.color_pair(2))
         found_satelites_box.box()
@@ -400,7 +400,7 @@ def __main__(stdscr):
 
         found_satelites_box.addstr(1, 5, " Satelites found: ", curses.color_pair(1))
         i = 2
-        if (gps.get_satellites):
+        if (fix):
             sat = get_satelite_info()
             if gps.nsat == 0:
                 found_satelites_box.addstr(2 , 2, f"ID: N/A  ", curses.color_pair(4))
@@ -409,7 +409,7 @@ def __main__(stdscr):
                 for prn, used in sat:
                     found_satelites_box.addstr(i , 2, f"ID: {prn}  ", curses.color_pair(4))
                     found_satelites_box.addstr(i , 9 + len(str(prn)), f"USED: {used}", curses.color_pair(4))
-                    if i < 9:
+                    if i < 8:
                         i = i+1
                     else:
                         i = 2
@@ -474,7 +474,7 @@ def __main__(stdscr):
             
             main_box.erase()
             draw_main_box()
-            if gps.get_satellites:
+            if fix:
                 found_satelites_box.erase()
                 draw_satelite_info()
             time_box.addstr(2,1, f"{gps.time}", curses.color_pair(4))
