@@ -296,7 +296,7 @@ class gps_get():
     def get_range_of_position(self):
         err = "N/A"
         if self.laterr and self.lonerr != "N/A":
-            err = (self.laterr + self.lonerr)/2
+            err = round((self.laterr + self.lonerr)/2,1)
         return err
     
 def get_country(lat, lon): #Calculates which country the position give by the gps is based on the data in COUNTRY_BOUNDS
@@ -369,7 +369,7 @@ def __main__(stdscr):
         main_box.addstr(8,2, "Current speed(km/h): ", curses.color_pair(3))
         main_box.addstr(8,2 + len("Current speed(km/h): "),f"{round(gps.speed * 3.6, 2)}", curses.color_pair(4))
         main_box.addstr(9,2,"Speed error(m/s, km/h): ", curses.color_pair(3))
-        main_box.addstr(9,2 + len("speed error(m/s, km/h): "), f"{gps.speederr}, {round(gps.speederr*3.6,2)}", curses.color_pair(4))
+        main_box.addstr(9,2 + len("speed error(m/s, km/h): "), f"{round(gps.speederr,1)}, {round(gps.speederr*3.6,1)}", curses.color_pair(4))
         main_box.addstr(10,2, "Climb rate(m/s): ", curses.color_pair(3))
         main_box.addstr(10,2 + len("Climb rate(m/s): "), f"{gps.climb}", curses.color_pair(4))
         main_box.addstr(11,2, "Heading: ", curses.color_pair(3))
