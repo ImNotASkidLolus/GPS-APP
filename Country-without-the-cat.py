@@ -342,7 +342,7 @@ def __main__(stdscr):
     stdscr.box()
     stdscr.attroff(curses.color_pair(2))
     #==================MAIN DATA BOX========================#
-    main_box = curses.newwin(16, 35, 15, int(cols/2 - 31))
+    main_box = curses.newwin(16, 38, 15, int(cols/2 - 33))
     main_box.attron(curses.color_pair(2))
     main_box.box()
     main_box.attroff(curses.color_pair(2))
@@ -369,7 +369,10 @@ def __main__(stdscr):
         main_box.addstr(8,2, "Current speed(km/h): ", curses.color_pair(3))
         main_box.addstr(8,2 + len("Current speed(km/h): "),f"{round(gps.speed * 3.6, 2)}", curses.color_pair(4))
         main_box.addstr(9,2,"Speed error(m/s, km/h): ", curses.color_pair(3))
-        main_box.addstr(9,2 + len("speed error(m/s, km/h): "), f"{round(gps.speederr,1)}, {round(gps.speederr*3.6,1)}", curses.color_pair(4))
+        if gps.speederr < 10:
+            main_box.addstr(9,2 + len("speed error(m/s, km/h): "), f"{gps.speederr:.1f}, {round(gps.speederr * 3.6,1)}", curses.color_pair(4))
+        else:
+            main_box.addstr(9,2 + len("speed error(m/s, km/h): "), "No movement", curses.color_pair(4))
         main_box.addstr(10,2, "Climb rate(m/s): ", curses.color_pair(3))
         main_box.addstr(10,2 + len("Climb rate(m/s): "), f"{gps.climb}", curses.color_pair(4))
         main_box.addstr(11,2, "Heading: ", curses.color_pair(3))
@@ -381,7 +384,7 @@ def __main__(stdscr):
         main_box.addstr(14,2, "Satellites found: ", curses.color_pair(3))
         main_box.addstr(14,2+len("satellites found: "), f"{gps.nsat}", curses.color_pair(4))
     #==================CURRENT TIME BOX======================#
-    time_box = curses.newwin(5, 28, 15, int(cols/2 +4))
+    time_box = curses.newwin(5, 28, 15, int(cols/2 +5))
     time_box.attron(curses.color_pair(2))
     time_box.box()
     time_box.attroff(curses.color_pair(2))
@@ -414,7 +417,7 @@ def __main__(stdscr):
 
 
     #==================SATELLITE INFO BOX===================#
-    found_satelites_box = curses.newwin(11, 28, 20, int(cols/2 +4))
+    found_satelites_box = curses.newwin(11, 28, 20, int(cols/2 +5))
     found_satelites_box.attron(curses.color_pair(2))
     found_satelites_box.box()
     found_satelites_box.attroff(curses.color_pair(2))
@@ -435,7 +438,7 @@ def __main__(stdscr):
             else:
                 for prn, used in sat:
                     found_satelites_box.addstr(i , 2, f"ID: {prn}  ", curses.color_pair(4))
-                    found_satelites_box.addstr(i , 9 + len(str(prn)), f"USED: {used}", curses.color_pair(4))
+                    found_satelites_box.addstr(i , 12, f"USED: {used}", curses.color_pair(4))
                     if i < 9:
                         i = i+1
                     else:
