@@ -213,27 +213,27 @@ COUNTRY_BOUNDS = {
 # ██║  ███╗██████╔╝███████╗       ██║     ██║   ██║██║     ███████║   ██║   ██║██║   ██║██╔██╗ ██║                            
 # ██║   ██║██╔═══╝ ╚════██║       ██║     ██║   ██║██║     ██╔══██║   ██║   ██║██║   ██║██║╚██╗██║                            
 # ╚██████╔╝██║     ███████║       ███████╗╚██████╔╝╚██████╗██║  ██║   ██║   ██║╚██████╔╝██║ ╚████║                            
-#  ╚═════╝ ╚═╝     ╚══════╝       ╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝        
+#  ╚═════╝ ╚═╝     ╚══════╝       ╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝
 
 # The app was basically made for my hackberry and was not tested for other devices, 
 # but probably this code works for every system that will run gpsd(GPS daemon).
 # Basically all unix based systems Mac, Linux, Free BSD      
-# Please notify me for any issues of bugs to fix or maybe even features to add ;)                                                                             
+# Please notify me for any issues of bugs to fix or maybe even features to add ;)                                                                              
 
 class gps_get():
     def __init__(self):
-        self.lat = 0
+        self.lat = 0 
         self.lon = 0
         self.alt = 0
         self.speed = 0
-        self.fix = 0
+        self.fix = 0 #what type of fix the gps has
         self.time = "No time"  
         self.heading = 0 
-        self.climb = "N/A"
+        self.climb = "N/A" #climb rate 
         self.session = None
         self.satelites = None
-        self.usat = 0
-        self.nsat = 0
+        self.usat = 0 #number of used satellites
+        self.nsat = 0 #number of found satellites
     def get_fix(self):
         if not GPS_AVAILABLE:
             return "Error: GPS NOT FOUND!"
@@ -251,7 +251,7 @@ class gps_get():
             b = False
             for _ in range(20):
                 report = self.session.next()
-                if report['class'] == 'TPV':
+                if report['class'] == 'TPV': #looks for the TPV class data and updates the gps_get class
                     self.fix   = getattr(report, 'mode',  1)
                     self.lat   = getattr(report, 'lat',   "N/A")
                     self.lon   = getattr(report, 'lon',   "N/A")
@@ -261,7 +261,7 @@ class gps_get():
                     self.heading = getattr(report, 'track', 0)
                     self.climb = getattr(report, 'climb', "N/A")
                     a = True
-                elif report['class'] == 'SKY':
+                elif report['class'] == 'SKY': #looks for the SKY class data and updates the gps_get class
                     usat = report.get('uSat', None)
                     nsat = report.get('nSat', None)
                     satelites = report.get('satellites', [])
@@ -274,36 +274,20 @@ class gps_get():
             return a or b
         except Exception:
             return False
-    # @property
-    # def get_satellites(self):
-    #     if self.session is None:
-    #         return False
-    #     try:
-    #         a = False
-    #         for _ in range(10):
-    #             report = self.session.next()
-    #             if report['class'] == 'SKY':
-    #                 satelites = report.get('satellites', [])
-    #             if satelites != []:
-    #                 self.satelites = satelites
-    #                 a = True
-    #         return a
-    #     except Exception:
-    #         return False
     @property
     def has_fix(self):
         return self.fix >= 2 and self.lat is not None and self.lon is not None
     @property
-    def get_head_str(self):
+    def get_head_str(self): #Calculates the direction of travel from the heading that the gps module provides
         if self.heading is None:
             return "Not found"
         directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
         directions_index = round(self.heading/45) % 8
         return f"{self.heading:.1f}", f"{directions[directions_index]}"
     
-def get_country(lat, lon):
+def get_country(lat, lon): #Calculates which country the position give by the gps is based on the data in COUNTRY_BOUNDS
     for country, bounds in COUNTRY_BOUNDS.items():
-        if (bounds["lat"][0] <= lat <= bounds["lat"][1] and
+        if (bounds["lat"][0] <= lat <= bounds["lat"][1] and 
                 bounds["lon"][0] <= lon <= bounds["lon"][1]):
             return country
     return "Ocean"
@@ -327,13 +311,14 @@ def __main__(stdscr):
     curses.use_default_colors()
     curses.curs_set(0)
 
-    curses.init_pair(1, curses.COLOR_BLACK,  curses.COLOR_MAGENTA)   # title bar
-    curses.init_pair(2, curses.COLOR_MAGENTA,  -1)                  # box border
-    curses.init_pair(3, curses.COLOR_WHITE, -1)                  # label
-    curses.init_pair(4, curses.COLOR_YELLOW,   -1)               #value
-    curses.init_pair(5, curses.COLOR_MAGENTA, -1)
-    curses.init_pair(6, curses.COLOR_YELLOW, curses.COLOR_WHITE) 
-    curses.init_pair(7, curses.COLOR_YELLOW, -1)               
+    #======================COLORS INITIALIZATION=======================#
+    curses.init_pair(1, curses.COLOR_BLACK,  curses.COLOR_MAGENTA) #title bar
+    curses.init_pair(2, curses.COLOR_MAGENTA,  -1) #box border
+    curses.init_pair(3, curses.COLOR_WHITE, -1) #label
+    curses.init_pair(4, curses.COLOR_YELLOW,   -1) #value
+    curses.init_pair(5, curses.COLOR_MAGENTA, -1) #color of the header text
+    curses.init_pair(6, curses.COLOR_YELLOW, curses.COLOR_WHITE) #color of the KUKI text
+    curses.init_pair(7, curses.COLOR_YELLOW, -1) #color of KUKI the cat
 
     rows, cols = stdscr.getmaxyx()
     current_country = "N/A"
@@ -344,6 +329,10 @@ def __main__(stdscr):
     stdscr.attroff(curses.color_pair(2))
     #==================MAIN DATA BOX========================#
     main_box = curses.newwin(14, 35, 15, int(cols/2 - 31))
+    main_box.attron(curses.color_pair(2))
+    main_box.box()
+    main_box.attroff(curses.color_pair(2))
+    main_box.addstr(1,1, "Wait for the content to load", curses.color_pair(3))
 
     def draw_main_box():
         main_box.attron(curses.color_pair(2))
@@ -378,9 +367,14 @@ def __main__(stdscr):
     time_box.attron(curses.color_pair(2))
     time_box.box()
     time_box.attroff(curses.color_pair(2))
+    time_box.addstr(1,1, "Wait for content to load", curses.color_pair(3))
+    def draw_time_box():
+        time_box.attron(curses.color_pair(2))
+        time_box.box()
+        time_box.attroff(curses.color_pair(2))
 
-    time_box.addstr(1, 2, " Current GPS time(UTC): ", curses.color_pair(1))
-    time_box.addstr(2, 1, f"{gps.time}", curses.color_pair(4))
+        time_box.addstr(1, 2, " Current GPS time(UTC): ", curses.color_pair(1))
+        time_box.addstr(2, 1, f"{gps.time}", curses.color_pair(4))
 
     #===================HEADER TEXT BOX======================#
     text_box = curses.newwin(14, cols - 2, 1, 1)
@@ -401,6 +395,11 @@ def __main__(stdscr):
 
     #==================SATELLITE INFO BOX===================#
     found_satelites_box = curses.newwin(10, 28, 19, int(cols/2 +4))
+    found_satelites_box.attron(curses.color_pair(2))
+    found_satelites_box.box()
+    found_satelites_box.attroff(curses.color_pair(2))
+    found_satelites_box.addstr(1,1, "Wait for content to load", curses.color_pair(3))
+    
     def draw_satelite_info():
         found_satelites_box.attron(curses.color_pair(2))
         found_satelites_box.box()
@@ -424,14 +423,16 @@ def __main__(stdscr):
         elif gps.nsat == 0:
             found_satelites_box.addstr(2 , 2, f"ID: N/A  ", curses.color_pair(4))
             found_satelites_box.addstr(2 , 9 + len("n/a"), f"USED: N/A", curses.color_pair(4))
+
     current_time = datetime.datetime.now()                      
     last_time_stamp = current_time.time()
     status = curses.newwin(1, cols-2, rows - 2, 1)
     status.attron(curses.color_pair(1))
-    status.addstr(0, 2, f"Last updated: {last_time_stamp}   Press q or Q to exit".ljust(cols - 7))
+    status.addstr(0, 2, f"Last updated: {last_time_stamp}".ljust(cols - 7))
+    status.addstr(0, cols - 3 - len("Press q or Q to exit "), "Press q or Q to exit")
     status.attroff(curses.color_pair(1))
 
-    #SHOW ALL BOXES
+    #===============SHOW ALL BOXES=========================#
     stdscr.noutrefresh()
     main_box.noutrefresh()
     time_box.noutrefresh()
@@ -448,7 +449,7 @@ def __main__(stdscr):
         current_time = datetime.datetime.now()
         now = time.time()
 
-    #============UPDATE DELAY TO PREVENT CRASHES AND MALFUNCTIONS===============#
+        #============UPDATE DELAY TO PREVENT CRASHES AND MALFUNCTIONS===============#
         if now - last_update >= 1:
             last_time_stamp = current_time.time()
             fix = gps.update_fix()
@@ -462,9 +463,11 @@ def __main__(stdscr):
             if fix:
                 found_satelites_box.erase()
                 draw_satelite_info()
-            time_box.addstr(2,1, f"{gps.time}", curses.color_pair(4))
+            time_box.erase()
+            draw_time_box()
             status.attron(curses.color_pair(1))
-            status.addstr(0, 2, f" Last updated: {last_time_stamp}".ljust(cols - 7))
+            status.addstr(0, 2, f" Last updated: {last_time_stamp} ".ljust(cols - 7))
+            status.addstr(0, cols - 3 - len("Press q or Q to exit "), "Press q or Q to exit")
             status.attroff(curses.color_pair(1))
 
         main_box.noutrefresh()
