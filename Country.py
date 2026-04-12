@@ -329,6 +329,10 @@ def __main__(stdscr):
     stdscr.attroff(curses.color_pair(2))
     #==================MAIN DATA BOX========================#
     main_box = curses.newwin(14, 35, 15, int(cols/2 - 31))
+    main_box.attron(curses.color_pair(2))
+    main_box.box()
+    main_box.attroff(curses.color_pair(2))
+    main_box.addstr(1,1, "Wait for the content to load", curses.color_pair(3))
 
     def draw_main_box():
         main_box.attron(curses.color_pair(2))
@@ -358,15 +362,19 @@ def __main__(stdscr):
         main_box.addstr(11, 2 + len("used satellites: "), f"{gps.usat}", curses.color_pair(4))
         main_box.addstr(12,2, "Satellites found: ", curses.color_pair(3))
         main_box.addstr(12,2+len("satellites found: "), f"{gps.nsat}", curses.color_pair(4))
-    draw_main_box()
     #==================CURRENT TIME BOX======================#
     time_box = curses.newwin(4, 28, 15, int(cols/2 +4))
     time_box.attron(curses.color_pair(2))
     time_box.box()
     time_box.attroff(curses.color_pair(2))
+    time_box.addstr(1,1, "Wait for content to load", curses.color_pair(3))
+    def draw_time_box():
+        time_box.attron(curses.color_pair(2))
+        time_box.box()
+        time_box.attroff(curses.color_pair(2))
 
-    time_box.addstr(1, 2, " Current GPS time(UTC): ", curses.color_pair(1))
-    time_box.addstr(2, 1, f"{gps.time}", curses.color_pair(4))
+        time_box.addstr(1, 2, " Current GPS time(UTC): ", curses.color_pair(1))
+        time_box.addstr(2, 1, f"{gps.time}", curses.color_pair(4))
 
     #===================HEADER TEXT BOX======================#
     text_box = curses.newwin(14, cols - 2, 1, 1)
@@ -387,6 +395,11 @@ def __main__(stdscr):
 
     #==================SATELLITE INFO BOX===================#
     found_satelites_box = curses.newwin(10, 28, 19, int(cols/2 +4))
+    found_satelites_box.attron(curses.color_pair(2))
+    found_satelites_box.box()
+    found_satelites_box.attroff(curses.color_pair(2))
+    found_satelites_box.addstr(1,1, "Wait for content to load", curses.color_pair(3))
+    
     def draw_satelite_info():
         found_satelites_box.attron(curses.color_pair(2))
         found_satelites_box.box()
@@ -410,11 +423,10 @@ def __main__(stdscr):
         elif gps.nsat == 0:
             found_satelites_box.addstr(2 , 2, f"ID: N/A  ", curses.color_pair(4))
             found_satelites_box.addstr(2 , 9 + len("n/a"), f"USED: N/A", curses.color_pair(4))
-    draw_satelite_info()
 
 
     #=======================KUKI THE CAT BOX=================================#
-    cat_box = curses.newwin(15, 30, 29, 2)
+    cat_box = curses.newwin(15, 30, 26, 2)
     cat_box.addstr(0, 0, "    _", curses.color_pair(7))
     cat_box.addstr(1, 0, "    \`*-", curses.color_pair(7))
     cat_box.addstr(2, 0, "    )  _`-.", curses.color_pair(7))
@@ -422,7 +434,7 @@ def __main__(stdscr):
     cat_box.addstr(4, 0, "    : _   '  \.", curses.color_pair(7))
     cat_box.addstr(5, 0, "    ; *` _.   `*-._ ", curses.color_pair(7))
     cat_box.addstr(6, 0, "    `-.-'          `-.", curses.color_pair(7))
-    cat_box.addstr(7, 0, "      ;       `       `.", curses.color_pair(7))
+    cat_box.addstr(7, 0, "      ; KUKI  `       `.", curses.color_pair(7))
     cat_box.addstr(8, 0, "      :.       .        \.", curses.color_pair(7))
     cat_box.addstr(9, 0, "      . \  .   :   .-'   .", curses.color_pair(7))
     cat_box.addstr(10, 0, "      '  `+.;  ;  '      :",curses.color_pair(7))
@@ -430,22 +442,23 @@ def __main__(stdscr):
     cat_box.addstr(12, 0, "      ; '   : :`-:     _.`* ;",curses.color_pair(7))
     cat_box.addstr(13, 0, "   .*' /  .*' ; .*`- +'  `*'",curses.color_pair(7))
     cat_box.addstr(14, 0, "   `*-*   `*-*  `*-*'",curses.color_pair(7))
-    cat_box.addstr(4, 4 + len("    : _   '  \."), "KUKI", curses.color_pair(7))
+    #cat_box.addstr(4, 4 + len("    : _   '  \."), "KUKI", curses.color_pair(7))
 
     current_time = datetime.datetime.now()                      
     last_time_stamp = current_time.time()
     status = curses.newwin(1, cols-2, rows - 2, 1)
     status.attron(curses.color_pair(1))
     status.addstr(0, 2, f"Last updated: {last_time_stamp}".ljust(cols - 7))
+    status.addstr(0, cols - 3 - len("Press q or Q to exit "), "Press q or Q to exit")
     status.attroff(curses.color_pair(1))
 
     #===============SHOW ALL BOXES=========================#
     stdscr.noutrefresh()
+    cat_box.noutrefresh()
     main_box.noutrefresh()
     time_box.noutrefresh()
     text_box.noutrefresh()
     found_satelites_box.noutrefresh()
-    cat_box.noutrefresh()
     status.noutrefresh()
     curses.doupdate()
 
@@ -471,9 +484,11 @@ def __main__(stdscr):
             if fix:
                 found_satelites_box.erase()
                 draw_satelite_info()
-            time_box.addstr(2,1, f"{gps.time}", curses.color_pair(4))
+            time_box.erase()
+            draw_time_box()
             status.attron(curses.color_pair(1))
-            status.addstr(0, 2, f" Last updated: {last_time_stamp}".ljust(cols - 7))
+            status.addstr(0, 2, f" Last updated: {last_time_stamp} ".ljust(cols - 7))
+            status.addstr(0, cols - 3 - len("Press q or Q to exit "), "Press q or Q to exit")
             status.attroff(curses.color_pair(1))
 
         main_box.noutrefresh()

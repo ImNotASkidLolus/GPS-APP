@@ -373,7 +373,6 @@ def __main__(stdscr):
         main_box.addstr(11, 2 + len("used satellites: "), f"{gps.usat}", curses.color_pair(4))
         main_box.addstr(12,2, "Satellites found: ", curses.color_pair(3))
         main_box.addstr(12,2+len("satellites found: "), f"{gps.nsat}", curses.color_pair(4))
-    draw_main_box()
     #==================CURRENT TIME BOX======================#
     time_box = curses.newwin(4, 28, 15, int(cols/2 +4))
     time_box.attron(curses.color_pair(2))
@@ -425,13 +424,11 @@ def __main__(stdscr):
         elif gps.nsat == 0:
             found_satelites_box.addstr(2 , 2, f"ID: N/A  ", curses.color_pair(4))
             found_satelites_box.addstr(2 , 9 + len("n/a"), f"USED: N/A", curses.color_pair(4))
-    draw_satelite_info()
-
     current_time = datetime.datetime.now()                      
     last_time_stamp = current_time.time()
     status = curses.newwin(1, cols-2, rows - 2, 1)
     status.attron(curses.color_pair(1))
-    status.addstr(0, 2, f"Last updated: {last_time_stamp}".ljust(cols - 7))
+    status.addstr(0, 2, f"Last updated: {last_time_stamp}   Press q or Q to exit".ljust(cols - 7))
     status.attroff(curses.color_pair(1))
 
     #SHOW ALL BOXES
