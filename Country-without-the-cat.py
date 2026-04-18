@@ -298,6 +298,26 @@ class gps_get():
         if self.laterr and self.lonerr != "N/A":
             err = round((self.laterr + self.lonerr)/2,1)
         return err
+    @property
+    def grid_square_position(self):
+        if self.lon and self.lat != 0:
+            lon_adj = self.lon + 180
+            lat_adj = self.lat + 90
+
+            F1 = chr(ord('A') + int(lon_adj/20))
+            F2 = chr(ord('A') + int(lat_adj/10))
+
+            S1 = str(int((lon_adj%20)/2))
+            S2 = str(int(lat_adj%10))
+
+            ss1 = chr(ord('a') + int((lon_adj%2) *12))
+            ss2 = chr(ord('a') + int((lat_adj%1) * 24))
+
+            return F1 + F2 + S1 + S2 + ss1 + ss2
+        else:
+            return "Not found"
+
+
     
 def get_country(lat, lon): #Calculates which country the position give by the gps is based on the data in COUNTRY_BOUNDS
     for country, bounds in COUNTRY_BOUNDS.items():
@@ -342,7 +362,7 @@ def __main__(stdscr):
     stdscr.box()
     stdscr.attroff(curses.color_pair(2))
     #==================MAIN DATA BOX========================#
-    main_box = curses.newwin(16, 38, 15, int(cols/2 - 33))
+    main_box = curses.newwin(17, 38, 15, int(cols/2 - 33))
     main_box.attron(curses.color_pair(2))
     main_box.box()
     main_box.attroff(curses.color_pair(2))
@@ -364,25 +384,27 @@ def __main__(stdscr):
         main_box.addstr(5,2 + len("position error(m): "), f"{gps.get_range_of_position}", curses.color_pair(4))
         main_box.addstr(6,2, "Current country: ", curses.color_pair(3))
         main_box.addstr(6,2 + len("Current country: "), f"{current_country}", curses.color_pair(4))
-        main_box.addstr(7,2, "Current speed(m/s): ", curses.color_pair(3))
-        main_box.addstr(7,2 + len("Current speed(m/s): "),f"{gps.speed}", curses.color_pair(4))
-        main_box.addstr(8,2, "Current speed(km/h): ", curses.color_pair(3))
-        main_box.addstr(8,2 + len("Current speed(km/h): "),f"{round(gps.speed * 3.6, 2)}", curses.color_pair(4))
-        main_box.addstr(9,2,"Speed error(m/s, km/h): ", curses.color_pair(3))
+        main_box.addstr(7,2, "Current grid square: ", curses.color_pair(3))
+        main_box.addstr(7,2+len("current grid square: "), f"{gps.grid_square_position}", curses.color_pair(4))
+        main_box.addstr(8,2, "Current speed(m/s): ", curses.color_pair(3))
+        main_box.addstr(8,2 + len("Current speed(m/s): "),f"{gps.speed}", curses.color_pair(4))
+        main_box.addstr(9,2, "Current speed(km/h): ", curses.color_pair(3))
+        main_box.addstr(9,2 + len("Current speed(km/h): "),f"{round(gps.speed * 3.6, 2)}", curses.color_pair(4))
+        main_box.addstr(10,2,"Speed error(m/s, km/h): ", curses.color_pair(3))
         if gps.speederr < 10:
-            main_box.addstr(9,2 + len("speed error(m/s, km/h): "), f"{gps.speederr:.1f}, {round(gps.speederr * 3.6,1)}", curses.color_pair(4))
+            main_box.addstr(10,2 + len("speed error(m/s, km/h): "), f"{gps.speederr:.1f}, {round(gps.speederr * 3.6,1)}", curses.color_pair(4))
         else:
-            main_box.addstr(9,2 + len("speed error(m/s, km/h): "), "No movement", curses.color_pair(4))
-        main_box.addstr(10,2, "Climb rate(m/s): ", curses.color_pair(3))
-        main_box.addstr(10,2 + len("Climb rate(m/s): "), f"{gps.climb}", curses.color_pair(4))
-        main_box.addstr(11,2, "Heading: ", curses.color_pair(3))
-        main_box.addstr(11,2 + len("Heading: "), f"{head}", curses.color_pair(4))
-        main_box.addstr(12,2, "Bearing: ", curses.color_pair(3))
-        main_box.addstr(12,2 + len("Bearing: "), f"{bear}°T", curses.color_pair(4))
-        main_box.addstr(13,2, "Used satellites: ", curses.color_pair(3))
-        main_box.addstr(13, 2 + len("used satellites: "), f"{gps.usat}", curses.color_pair(4))
-        main_box.addstr(14,2, "Satellites found: ", curses.color_pair(3))
-        main_box.addstr(14,2+len("satellites found: "), f"{gps.nsat}", curses.color_pair(4))
+            main_box.addstr(10,2 + len("speed error(m/s, km/h): "), "No movement", curses.color_pair(4))
+        main_box.addstr(11,2, "Climb rate(m/s): ", curses.color_pair(3))
+        main_box.addstr(11,2 + len("Climb rate(m/s): "), f"{gps.climb}", curses.color_pair(4))
+        main_box.addstr(12,2, "Heading: ", curses.color_pair(3))
+        main_box.addstr(12,2 + len("Heading: "), f"{head}", curses.color_pair(4))
+        main_box.addstr(13,2, "Bearing: ", curses.color_pair(3))
+        main_box.addstr(13,2 + len("Bearing: "), f"{bear}°T", curses.color_pair(4))
+        main_box.addstr(14,2, "Used satellites: ", curses.color_pair(3))
+        main_box.addstr(14, 2 + len("used satellites: "), f"{gps.usat}", curses.color_pair(4))
+        main_box.addstr(15,2, "Satellites found: ", curses.color_pair(3))
+        main_box.addstr(15,2+len("satellites found: "), f"{gps.nsat}", curses.color_pair(4))
     #==================CURRENT TIME BOX======================#
     time_box = curses.newwin(5, 28, 15, int(cols/2 +5))
     time_box.attron(curses.color_pair(2))
@@ -417,7 +439,7 @@ def __main__(stdscr):
 
 
     #==================SATELLITE INFO BOX===================#
-    found_satelites_box = curses.newwin(11, 28, 20, int(cols/2 +5))
+    found_satelites_box = curses.newwin(12, 28, 20, int(cols/2 +5))
     found_satelites_box.attron(curses.color_pair(2))
     found_satelites_box.box()
     found_satelites_box.attroff(curses.color_pair(2))
@@ -439,7 +461,7 @@ def __main__(stdscr):
                 for prn, used in sat:
                     found_satelites_box.addstr(i , 2, f"ID: {prn}  ", curses.color_pair(4))
                     found_satelites_box.addstr(i , 12, f"USED: {used}", curses.color_pair(4))
-                    if i < 9:
+                    if i < 10:
                         i = i+1
                     else:
                         i = 2
