@@ -300,7 +300,7 @@ class gps_get():
         return err
     @property
     def grid_square_position(self):
-        if self.lon and self.lat != 0:
+        if self.lon and self.lat != 0 and self.lat and self.lon != "N/A":
             lon_adj = self.lon + 180
             lat_adj = self.lat + 90
 
