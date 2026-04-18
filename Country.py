@@ -270,9 +270,9 @@ class gps_get():
                     self.climb = getattr(report, 'climb', "N/A")
                     a = True
                 elif report['class'] == 'SKY': #looks for the SKY class data and updates the gps_get class
-                    usat = report.get('uSat', None)
-                    nsat = report.get('nSat', None)
-                    satelites = report.get('satellites', [])
+                    usat = getattr(report, 'uSat', None)
+                    nsat = getattr(report, 'nSat', None)
+                    satelites = getattr(report, 'satellites', [])
                     if nsat and usat != None:
                         self.nsat = nsat
                         self.usat = usat
