@@ -300,19 +300,18 @@ class gps_get():
         return err
     @property
     def grid_square_position(self):
-        if self.lon and self.lat != 0 and self.lat and self.lon != "N/A":
+        if self.lon not in (0, "N/A") and self.lat not in (0, "N/A"):
             lon_adj = self.lon + 180
             lat_adj = self.lat + 90
+            F1 = chr(ord('A') + int(lon_adj / 20))
+            F2 = chr(ord('A') + int(lat_adj / 10))
 
-            F1 = chr(ord('A') + int(lon_adj/20))
-            F2 = chr(ord('A') + int(lat_adj/10))
+            S1 = str(int((lon_adj % 20) / 2))
+            S2 = str(int(lat_adj % 10))
 
-            S1 = str(int((lon_adj%20)/2))
-            S2 = str(int(lat_adj%10))
-
-            ss1 = chr(ord('a') + int((lon_adj%2) *12))
-            ss2 = chr(ord('a') + int((lat_adj%1) * 24))
-
+            ss1 = chr(ord('a') + int((lon_adj % 2) * 12))
+            ss2 = chr(ord('a') + int((lat_adj % 1) * 24))
+            
             return F1 + F2 + S1 + S2 + ss1 + ss2
         else:
             return "Not found"
