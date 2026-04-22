@@ -311,12 +311,10 @@ class gps_get():
 
             ss1 = chr(ord('a') + int((lon_adj % 2) * 12))
             ss2 = chr(ord('a') + int((lat_adj % 1) * 24))
-            
+
             return F1 + F2 + S1 + S2 + ss1 + ss2
         else:
             return "Not found"
-
-
     
 def get_country(lat, lon): #Calculates which country the position give by the gps is based on the data in COUNTRY_BOUNDS
     for country, bounds in COUNTRY_BOUNDS.items():
@@ -332,9 +330,9 @@ def get_satelite_info():
     sat = []
     if gps.satelites is not None:
         for satellite in gps.satelites:
-            sat.append((satellite.get('PRN', 0), satellite.get('used', False)))
+            sat.append((satellite.get('PRN', 0), satellite.get('used', False), satellite.get('ss', 0)))
         return sat
-    return [("N/A", "N/A")]
+    return [("N/A", "N/A", "N/A")]
 
 
 def __main__(stdscr):
@@ -361,7 +359,7 @@ def __main__(stdscr):
     stdscr.box()
     stdscr.attroff(curses.color_pair(2))
     #==================MAIN DATA BOX========================#
-    main_box = curses.newwin(17, 38, 15, int(cols/2 - 33))
+    main_box = curses.newwin(17, 38, 15, int(cols/2 - 38))
     main_box.attron(curses.color_pair(2))
     main_box.box()
     main_box.attroff(curses.color_pair(2))
@@ -405,7 +403,7 @@ def __main__(stdscr):
         main_box.addstr(15,2, "Satellites found: ", curses.color_pair(3))
         main_box.addstr(15,2+len("satellites found: "), f"{gps.nsat}", curses.color_pair(4))
     #==================CURRENT TIME BOX======================#
-    time_box = curses.newwin(5, 28, 15, int(cols/2 +5))
+    time_box = curses.newwin(5, 38, 15, int(cols/2))
     time_box.attron(curses.color_pair(2))
     time_box.box()
     time_box.attroff(curses.color_pair(2))
@@ -415,9 +413,9 @@ def __main__(stdscr):
         time_box.box()
         time_box.attroff(curses.color_pair(2))
 
-        time_box.addstr(1, 2, " Current GPS time(UTC): ", curses.color_pair(1))
-        time_box.addstr(2, 1, f"{gps.time}", curses.color_pair(4))
-        time_box.addstr(3, 1, f"Time error(s): ", curses.color_pair(3))
+        time_box.addstr(1, 6, " Current GPS time(UTC): ", curses.color_pair(1))
+        time_box.addstr(2, 2, f"{gps.time}", curses.color_pair(4))
+        time_box.addstr(3, 2, f"Time error(s): ", curses.color_pair(3))
         time_box.addstr(3, 2+len("time error(s): "), f"{gps.timeerr}", curses.color_pair(4))
 
     #===================HEADER TEXT BOX======================#
@@ -438,7 +436,7 @@ def __main__(stdscr):
 
 
     #==================SATELLITE INFO BOX===================#
-    found_satelites_box = curses.newwin(12, 28, 20, int(cols/2 +5))
+    found_satelites_box = curses.newwin(12, 38, 20, int(cols/2))
     found_satelites_box.attron(curses.color_pair(2))
     found_satelites_box.box()
     found_satelites_box.attroff(curses.color_pair(2))
@@ -449,43 +447,46 @@ def __main__(stdscr):
         found_satelites_box.box()
         found_satelites_box.attroff(curses.color_pair(2))
 
-        found_satelites_box.addstr(1, 5, " Satelites found: ", curses.color_pair(1))
+        found_satelites_box.addstr(1, 9, " Satelites found: ", curses.color_pair(1))
         i = 2
         if (fix):
             sat = get_satelite_info()
             if gps.nsat == 0:
-                found_satelites_box.addstr(2 , 2, f"ID: N/A  ", curses.color_pair(4))
-                found_satelites_box.addstr(2 , 9 + len("n/a"), f"USED: N/A", curses.color_pair(4))
+                found_satelites_box.addstr(2 , 2, "ID: N/A  ", curses.color_pair(4))
+                found_satelites_box.addstr(2 , 9 + len("n/a"), "SNR: N/A", curses.color_pair(4))
+                found_satelites_box.addstr(2, 21, "USED: N/A",curses.color_pair(4))
             else:
-                for prn, used in sat:
+                for prn, used, snr in sat:
                     found_satelites_box.addstr(i , 2, f"ID: {prn}  ", curses.color_pair(4))
-                    found_satelites_box.addstr(i , 12, f"USED: {used}", curses.color_pair(4))
+                    found_satelites_box.addstr(i , 12, f"SNR: {snr}  ", curses.color_pair(4))
+                    found_satelites_box.addstr(i, 24, f"USED: {used}",curses.color_pair(4))
                     if i < 10:
                         i = i+1
                     else:
                         i = 2
         elif gps.nsat == 0:
-            found_satelites_box.addstr(2 , 2, f"ID: N/A  ", curses.color_pair(4))
-            found_satelites_box.addstr(2 , 9 + len("n/a"), f"USED: N/A", curses.color_pair(4))
+            found_satelites_box.addstr(2 , 2, "ID: N/A  ", curses.color_pair(4))
+            found_satelites_box.addstr(2 , 9 + len("n/a"), "SNR: N/A", curses.color_pair(4))
+            found_satelites_box.addstr(2, 21, "USED: N/A",curses.color_pair(4))
 
 
     #=======================KUKI THE CAT BOX=================================#
     cat_box = curses.newwin(15, 28, 27, 1)
-    cat_box.addstr(0, 0, "    _", curses.color_pair(7))
-    cat_box.addstr(1, 0, "    \`*-", curses.color_pair(7))
-    cat_box.addstr(2, 0, "    )  _`-.", curses.color_pair(7))
-    cat_box.addstr(3, 0, "    .  : `. .", curses.color_pair(7))
-    cat_box.addstr(4, 0, "    : _   '  \.", curses.color_pair(7))
-    cat_box.addstr(5, 0, "    ; *` _.   `*-._ ", curses.color_pair(7))
-    cat_box.addstr(6, 0, "    `-.-'          `-.", curses.color_pair(7))
-    cat_box.addstr(7, 0, "      ; KUKI  `       `.", curses.color_pair(7))
-    cat_box.addstr(8, 0, "      :.       .        \.", curses.color_pair(7))
-    cat_box.addstr(9, 0, "      . \  .   :   .-'   .", curses.color_pair(7))
-    cat_box.addstr(10, 0, "      '  `+.;  ;  '      :",curses.color_pair(7))
-    cat_box.addstr(11, 0, "      :  '  |    ;       ;-.",curses.color_pair(7))
-    cat_box.addstr(12, 0, "      ; '   : :`-:     _.`* ;",curses.color_pair(7))
-    cat_box.addstr(13, 0, "   .*' /  .*' ; .*`- +'  `*'",curses.color_pair(7))
-    cat_box.addstr(14, 0, "   `*-*   `*-*  `*-*'",curses.color_pair(7))
+    cat_box.addstr(0, 0, " _", curses.color_pair(7))
+    cat_box.addstr(1, 0, " \`*-", curses.color_pair(7))
+    cat_box.addstr(2, 0, " )  _`-.", curses.color_pair(7))
+    cat_box.addstr(3, 0, " .  : `. .", curses.color_pair(7))
+    cat_box.addstr(4, 0, " : _   '  \.", curses.color_pair(7))
+    cat_box.addstr(5, 0, " ; *` _.   `*-._ ", curses.color_pair(7))
+    cat_box.addstr(6, 0, " `-.-'          `-.", curses.color_pair(7))
+    cat_box.addstr(7, 0, "   ; KUKI  `       `.", curses.color_pair(7))
+    cat_box.addstr(8, 0, "   :.       .        \.", curses.color_pair(7))
+    cat_box.addstr(9, 0, "   . \  .   :   .-'   .", curses.color_pair(7))
+    cat_box.addstr(10, 0, "   '  `+.;  ;  '      :",curses.color_pair(7))
+    cat_box.addstr(11, 0, "   :  '  |    ;       ;-.",curses.color_pair(7))
+    cat_box.addstr(12, 0, "   ; '   : :`-:     _.`* ;",curses.color_pair(7))
+    cat_box.addstr(13, 0, ".*' /  .*' ; .*`- +'  `*'",curses.color_pair(7))
+    cat_box.addstr(14, 0, "`*-*   `*-*  `*-*'",curses.color_pair(7))
     #cat_box.addstr(4, 4 + len("    : _   '  \."), "KUKI", curses.color_pair(7))
 
     current_time = datetime.datetime.now()                      
