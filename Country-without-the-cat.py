@@ -351,8 +351,6 @@ def __main__(stdscr):
     curses.init_pair(3, curses.COLOR_GREEN, -1) #label
     curses.init_pair(4, curses.COLOR_MAGENTA,   -1) #value
     curses.init_pair(5, curses.COLOR_RED, -1) #color of the header text
-    curses.init_pair(6, curses.COLOR_YELLOW, curses.COLOR_WHITE) #color of the KUKI text
-    curses.init_pair(7, curses.COLOR_YELLOW, -1) #color of KUKI the cat
 
     rows, cols = stdscr.getmaxyx()
     current_country = "N/A"
