@@ -450,22 +450,31 @@ def __main__(stdscr):
         if (fix):
             sat = get_satelite_info()
             if gps.nsat == 0:
-                found_satelites_box.addstr(2 , 2, "ID: N/A  ", curses.color_pair(4))
-                found_satelites_box.addstr(2 , 9 + len("n/a"), "SNR: N/A", curses.color_pair(4))
-                found_satelites_box.addstr(2, 21, "USED: N/A",curses.color_pair(4))
+                found_satelites_box.addstr(2 , 2, "ID: ", curses.color_pair(3))
+                found_satelites_box.addstr(2, 2+len("ID: "), "N/A  ",curses.color_pair(4))
+                found_satelites_box.addstr(2 , 9 + len("n/a"), "SNR: ", curses.color_pair(3))
+                found_satelites_box.addstr(2, 12 + len("SNR: "), "N/A", curses.color_pair(4))
+                found_satelites_box.addstr(2, 21, "USED: ",curses.color_pair(3))
+                found_satelites_box.addstr(2, 21 + len("USED"), "N/A", curses.color_pair(4))
             else:
                 for prn, used, snr in sat:
-                    found_satelites_box.addstr(i , 2, f"ID: {prn}  ", curses.color_pair(4))
-                    found_satelites_box.addstr(i , 12, f"SNR: {snr}  ", curses.color_pair(4))
-                    found_satelites_box.addstr(i, 24, f"USED: {used}",curses.color_pair(4))
+                    found_satelites_box.addstr(i , 2, f"ID: ", curses.color_pair(3))
+                    found_satelites_box.addstr(i, 2 + len("ID: "), f"{prn}  ",curses.color_pair(4))
+                    found_satelites_box.addstr(i , 12, f"SNR: ", curses.color_pair(3))
+                    found_satelites_box.addstr(i, 12 + len("SNR: "), f"{int(snr)}dB  ", curses.color_pair(4))
+                    found_satelites_box.addstr(i, 24, f"USED: ",curses.color_pair(3))
+                    found_satelites_box.addstr(i, 24 + len("used: "), f"{used}",curses.color_pair(4))
                     if i < 10:
                         i = i+1
                     else:
                         i = 2
         elif gps.nsat == 0:
-            found_satelites_box.addstr(2 , 2, "ID: N/A  ", curses.color_pair(4))
-            found_satelites_box.addstr(2 , 9 + len("n/a"), "SNR: N/A", curses.color_pair(4))
-            found_satelites_box.addstr(2, 21, "USED: N/A",curses.color_pair(4))
+            found_satelites_box.addstr(2, 2+len("ID: "), "N/A  ",curses.color_pair(4))
+            found_satelites_box.addstr(2 , 9 + len("n/a"), "SNR: ", curses.color_pair(3))
+            found_satelites_box.addstr(2, 12 + len("SNR: "), "N/A", curses.color_pair(4))
+            found_satelites_box.addstr(2, 21, "USED: ",curses.color_pair(3))
+            found_satelites_box.addstr(2, 21 + len("USED"), "N/A", curses.color_pair(4))
+
 
     current_time = datetime.datetime.now()                      
     last_time_stamp = current_time.time()

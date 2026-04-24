@@ -388,10 +388,10 @@ def __main__(stdscr):
         main_box.addstr(9,2, "Current speed(km/h): ", curses.color_pair(3))
         main_box.addstr(9,2 + len("Current speed(km/h): "),f"{round(gps.speed * 3.6, 2)}", curses.color_pair(4))
         main_box.addstr(10,2,"Speed error(m/s, km/h): ", curses.color_pair(3))
-        if gps.speederr < 10:
+        if gps.speederr < 50:
             main_box.addstr(10,2 + len("speed error(m/s, km/h): "), f"{gps.speederr:.1f}, {round(gps.speederr * 3.6,1)}", curses.color_pair(4))
         else:
-            main_box.addstr(10,2 + len("speed error(m/s, km/h): "), "No movement", curses.color_pair(4))
+            main_box.addstr(10,2 + len("speed error(m/s, km/h): "), "Stationary", curses.color_pair(4))
         main_box.addstr(11,2, "Climb rate(m/s): ", curses.color_pair(3))
         main_box.addstr(11,2 + len("Climb rate(m/s): "), f"{gps.climb}", curses.color_pair(4))
         main_box.addstr(12,2, "Heading: ", curses.color_pair(3))
@@ -452,23 +452,30 @@ def __main__(stdscr):
         if (fix):
             sat = get_satelite_info()
             if gps.nsat == 0:
-                found_satelites_box.addstr(2 , 2, "ID: N/A  ", curses.color_pair(4))
-                found_satelites_box.addstr(2 , 9 + len("n/a"), "SNR: N/A", curses.color_pair(4))
-                found_satelites_box.addstr(2, 21, "USED: N/A",curses.color_pair(4))
+                found_satelites_box.addstr(2 , 2, "ID: ", curses.color_pair(3))
+                found_satelites_box.addstr(2, 2+len("ID: "), "N/A  ",curses.color_pair(4))
+                found_satelites_box.addstr(2 , 9 + len("n/a"), "SNR: ", curses.color_pair(3))
+                found_satelites_box.addstr(2, 12 + len("SNR: "), "N/A", curses.color_pair(4))
+                found_satelites_box.addstr(2, 21, "USED: ",curses.color_pair(3))
+                found_satelites_box.addstr(2, 21 + len("USED"), "N/A", curses.color_pair(4))
             else:
                 for prn, used, snr in sat:
-                    found_satelites_box.addstr(i , 2, f"ID: {prn}  ", curses.color_pair(4))
-                    found_satelites_box.addstr(i , 12, f"SNR: {snr}  ", curses.color_pair(4))
-                    found_satelites_box.addstr(i, 24, f"USED: {used}",curses.color_pair(4))
+                    found_satelites_box.addstr(i , 2, f"ID: ", curses.color_pair(3))
+                    found_satelites_box.addstr(i, 2 + len("ID: "), f"{prn}  ",curses.color_pair(4))
+                    found_satelites_box.addstr(i , 12, f"SNR: ", curses.color_pair(3))
+                    found_satelites_box.addstr(i, 12 + len("SNR: "), f"{int(snr)}dB  ", curses.color_pair(4))
+                    found_satelites_box.addstr(i, 24, f"USED: ",curses.color_pair(3))
+                    found_satelites_box.addstr(i, 24 + len("used: "), f"{used}",curses.color_pair(4))
                     if i < 10:
                         i = i+1
                     else:
                         i = 2
         elif gps.nsat == 0:
-            found_satelites_box.addstr(2 , 2, "ID: N/A  ", curses.color_pair(4))
-            found_satelites_box.addstr(2 , 9 + len("n/a"), "SNR: N/A", curses.color_pair(4))
-            found_satelites_box.addstr(2, 21, "USED: N/A",curses.color_pair(4))
-
+            found_satelites_box.addstr(2, 2+len("ID: "), "N/A  ",curses.color_pair(4))
+            found_satelites_box.addstr(2 , 9 + len("n/a"), "SNR: ", curses.color_pair(3))
+            found_satelites_box.addstr(2, 12 + len("SNR: "), "N/A", curses.color_pair(4))
+            found_satelites_box.addstr(2, 21, "USED: ",curses.color_pair(3))
+            found_satelites_box.addstr(2, 21 + len("USED"), "N/A", curses.color_pair(4))
 
     #=======================KUKI THE CAT BOX=================================#
     cat_box = curses.newwin(15, 28, 27, 1)
@@ -533,7 +540,7 @@ def __main__(stdscr):
             draw_time_box()
             status.attron(curses.color_pair(1))
             status.addstr(0, 2, f" Last updated: {last_time_stamp} ".ljust(cols - 7))
-            status.addstr(0, cols - 3 - len("Press q or Q to exit "), "Press q or Q to exit")
+            status.addstr(0, cols - 3 - len("Press q or Q to exit  "), "Press q or Q to exit ")
             status.attroff(curses.color_pair(1))
 
         main_box.noutrefresh()
