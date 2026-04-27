@@ -495,7 +495,7 @@ def main(stdscr):
             found_satelites_box.addstr(2, 24 + len("USED: "), "N/A", curses.color_pair(4))
 
     #=======================KUKI THE CAT BOX=================================#
-    if use_cat:
+    if rows > 47 and use_cat:
         try: 
             cat_box = curses.newwin(15, 28, 27, 1)
             cat_box.addstr(0, 0, r" _", curses.color_pair(7))
@@ -535,7 +535,7 @@ def main(stdscr):
         text_box.noutrefresh()
         found_satelites_box.noutrefresh()
         status.noutrefresh()
-        if use_cat:
+        if rows > 47 and use_cat:
             cat_box.noutrefresh()
         curses.doupdate()
     except Exception:
