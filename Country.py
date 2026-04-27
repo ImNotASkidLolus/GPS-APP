@@ -2,6 +2,7 @@ import curses
 import time
 import datetime
 import os
+import argparse
 
 try:
     import gps as gpsd_module
@@ -286,7 +287,7 @@ class gps_get():
     def has_fix(self):
         return self.fix >= 2 and self.lat is not None and self.lon is not None
     @property
-    def get_head_str(self): #Calculates the direction of travel from the heading that the gps module provides
+    def get_head_str(self): #Cal    print(args.output)   # None if not providedculates the direction of travel from the heading that the gps module provides
         if self.heading is None:
             return "Not found"
         directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
@@ -323,9 +324,6 @@ def get_country(lat, lon): #Calculates which country the position give by the gp
             return country
     return "Ocean"
 
-gps = gps_get()
-fix = gps.get_fix()
-
 def get_satelite_info():
     sat = []
     if gps.satelites is not None:
@@ -333,11 +331,10 @@ def get_satelite_info():
             sat.append((satellite.get('PRN', 0), satellite.get('used', False), satellite.get('ss', 0)))
         return sat
     return [("N/A", "N/A", "N/A")]
-
-
-def __main__(stdscr):
-    fix = gps.update_fix()
+def main(stdscr):
+    fix = gps.update_fix()     # None if not provided
     bear, head = gps.get_head_str
+    rows, cols = stdscr.getmaxyx()
     curses.start_color()
     curses.use_default_colors()
     curses.curs_set(0)
@@ -355,15 +352,23 @@ def __main__(stdscr):
     current_country = "N/A"
     if fix and gps.has_fix:
         current_country = get_country(gps.lat, gps.lon)
-    stdscr.attron(curses.color_pair(2))
-    stdscr.box()
-    stdscr.attroff(curses.color_pair(2))
+    try:
+        stdscr.attron(curses.color_pair(2))
+        stdscr.box()
+        stdscr.attroff(curses.color_pair(2))
+    except Exception:
+        print("Error printing too screen, perhaps your terminal is too small :(")
+        exit()
     #==================MAIN DATA BOX========================#
-    main_box = curses.newwin(17, 38, 15, int(cols/2 - 38))
-    main_box.attron(curses.color_pair(2))
-    main_box.box()
-    main_box.attroff(curses.color_pair(2))
-    main_box.addstr(1,1, "Wait for the content to load", curses.color_pair(3))
+    try:
+        main_box = curses.newwin(17, 38, 15, int(cols/2 - 38))
+        main_box.attron(curses.color_pair(2))
+        main_box.box()
+        main_box.attroff(curses.color_pair(2))
+        main_box.addstr(1,1, "Wait for the content to load", curses.color_pair(3))
+    except Exception:
+        print("Error printing too screen, perhaps your terminal is too small :(")
+        exit()
 
     def draw_main_box():
         main_box.attron(curses.color_pair(2))
@@ -403,11 +408,16 @@ def __main__(stdscr):
         main_box.addstr(15,2, "Satellites found: ", curses.color_pair(3))
         main_box.addstr(15,2+len("satellites found: "), f"{gps.nsat}", curses.color_pair(4))
     #==================CURRENT TIME BOX======================#
-    time_box = curses.newwin(5, 38, 15, int(cols/2))
-    time_box.attron(curses.color_pair(2))
-    time_box.box()
-    time_box.attroff(curses.color_pair(2))
-    time_box.addstr(1,1, "Wait for content to load", curses.color_pair(3))
+    try:
+        time_box = curses.newwin(5, 38, 15, int(cols/2))
+        time_box.attron(curses.color_pair(2))
+        time_box.box()
+        time_box.attroff(curses.color_pair(2))
+        time_box.addstr(1,1, "Wait for content to load", curses.color_pair(3))
+    except Exception:
+        print("Error printing too screen, perhaps your terminal is too small :(")
+        exit()
+
     def draw_time_box():
         time_box.attron(curses.color_pair(2))
         time_box.box()
@@ -419,29 +429,36 @@ def __main__(stdscr):
         time_box.addstr(3, 2+len("time error(s): "), f"{gps.timeerr}", curses.color_pair(4))
 
     #===================HEADER TEXT BOX======================#
-    text_box = curses.newwin(14, cols - 2, 1, 1)
+    try:
+        text_box = curses.newwin(14, cols - 2, 1, 1)
 
-    text_box.addstr(1, 0, " ██████╗ ██████╗ ███████╗ ".center(cols), curses.color_pair(5))
-    text_box.addstr(2, 0, "██╔════╝ ██╔══██╗██╔════╝ ".center(cols), curses.color_pair(5))
-    text_box.addstr(3, 0, "██║  ███╗██████╔╝███████╗ ".center(cols), curses.color_pair(5))
-    text_box.addstr(4, 0, "██║   ██║██╔═══╝ ╚════██║ ".center(cols), curses.color_pair(5))
-    text_box.addstr(5, 0, "╚██████╔╝██║     ███████║ ".center(cols), curses.color_pair(5))
-    text_box.addstr(6, 0, " ╚═════╝ ╚═╝     ╚══════╝ ".center(cols), curses.color_pair(5))
-    text_box.addstr(7, 0, "██╗      ██████╗  ██████╗ █████╗ ████████╗██╗ ██████╗ ███╗   ██╗ ".center(cols), curses.color_pair(5))
-    text_box.addstr(8, 0, "██║     ██╔═══██╗██╔════╝██╔══██╗╚══██╔══╝██║██╔═══██╗████╗  ██║ ".center(cols), curses.color_pair(5))
-    text_box.addstr(9, 0, "██║     ██║   ██║██║     ███████║   ██║   ██║██║   ██║██╔██╗ ██║ ".center(cols), curses.color_pair(5))
-    text_box.addstr(10,0, "██║     ██║   ██║██║     ██╔══██║   ██║   ██║██║   ██║██║╚██╗██║ ".center(cols), curses.color_pair(5))
-    text_box.addstr(11,0, "███████╗╚██████╔╝╚██████╗██║  ██║   ██║   ██║╚██████╔╝██║ ╚████║ ".center(cols), curses.color_pair(5))
-    text_box.addstr(12,0, "╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝ ".center(cols), curses.color_pair(5))
-
+        text_box.addstr(1, 0, " ██████╗ ██████╗ ███████╗ ".center(cols), curses.color_pair(5))
+        text_box.addstr(2, 0, "██╔════╝ ██╔══██╗██╔════╝ ".center(cols), curses.color_pair(5))
+        text_box.addstr(3, 0, "██║  ███╗██████╔╝███████╗ ".center(cols), curses.color_pair(5))
+        text_box.addstr(4, 0, "██║   ██║██╔═══╝ ╚════██║ ".center(cols), curses.color_pair(5))
+        text_box.addstr(5, 0, "╚██████╔╝██║     ███████║ ".center(cols), curses.color_pair(5))
+        text_box.addstr(6, 0, " ╚═════╝ ╚═╝     ╚══════╝ ".center(cols), curses.color_pair(5))
+        text_box.addstr(7, 0, "██╗      ██████╗  ██████╗ █████╗ ████████╗██╗ ██████╗ ███╗   ██╗ ".center(cols), curses.color_pair(5))
+        text_box.addstr(8, 0, "██║     ██╔═══██╗██╔════╝██╔══██╗╚══██╔══╝██║██╔═══██╗████╗  ██║ ".center(cols), curses.color_pair(5))
+        text_box.addstr(9, 0, "██║     ██║   ██║██║     ███████║   ██║   ██║██║   ██║██╔██╗ ██║ ".center(cols), curses.color_pair(5))
+        text_box.addstr(10,0, "██║     ██║   ██║██║     ██╔══██║   ██║   ██║██║   ██║██║╚██╗██║ ".center(cols), curses.color_pair(5))
+        text_box.addstr(11,0, "███████╗╚██████╔╝╚██████╗██║  ██║   ██║   ██║╚██████╔╝██║ ╚████║ ".center(cols), curses.color_pair(5))
+        text_box.addstr(12,0, "╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝ ".center(cols), curses.color_pair(5))
+    except Exception:
+        print("Error printing too screen, perhaps your terminal is too small :(")
+        exit()
 
     #==================SATELLITE INFO BOX===================#
-    found_satelites_box = curses.newwin(12, 38, 20, int(cols/2))
-    found_satelites_box.attron(curses.color_pair(2))
-    found_satelites_box.box()
-    found_satelites_box.attroff(curses.color_pair(2))
-    found_satelites_box.addstr(1,1, "Wait for content to load", curses.color_pair(3))
-    
+    try:
+        found_satelites_box = curses.newwin(12, 38, 20, int(cols/2))
+        found_satelites_box.attron(curses.color_pair(2))
+        found_satelites_box.box()
+        found_satelites_box.attroff(curses.color_pair(2))
+        found_satelites_box.addstr(1,1, "Wait for content to load", curses.color_pair(3))
+    except Exception:
+        print("Error printing too screen, perhaps your terminal is too small :(")
+        exit()
+
     def draw_satelite_info():
         found_satelites_box.attron(curses.color_pair(2))
         found_satelites_box.box()
@@ -470,7 +487,7 @@ def __main__(stdscr):
                         i = i+1
                     else:
                         i = 2
-        elif gps.nsat == 0:
+        else:
             found_satelites_box.addstr(2, 2+len("ID: "), "N/A  ",curses.color_pair(4))
             found_satelites_box.addstr(2 , 9 + len("n/a"), "SNR: ", curses.color_pair(3))
             found_satelites_box.addstr(2, 12 + len("SNR: "), "N/A", curses.color_pair(4))
@@ -478,23 +495,29 @@ def __main__(stdscr):
             found_satelites_box.addstr(2, 24 + len("USED: "), "N/A", curses.color_pair(4))
 
     #=======================KUKI THE CAT BOX=================================#
-    cat_box = curses.newwin(15, 28, 27, 1)
-    cat_box.addstr(0, 0, " _", curses.color_pair(7))
-    cat_box.addstr(1, 0, " \`*-", curses.color_pair(7))
-    cat_box.addstr(2, 0, " )  _`-.", curses.color_pair(7))
-    cat_box.addstr(3, 0, " .  : `. .", curses.color_pair(7))
-    cat_box.addstr(4, 0, " : _   '  \.", curses.color_pair(7))
-    cat_box.addstr(5, 0, " ; *` _.   `*-._ ", curses.color_pair(7))
-    cat_box.addstr(6, 0, " `-.-'          `-.", curses.color_pair(7))
-    cat_box.addstr(7, 0, "   ; KUKI  `       `.", curses.color_pair(7))
-    cat_box.addstr(8, 0, "   :.       .        \.", curses.color_pair(7))
-    cat_box.addstr(9, 0, "   . \  .   :   .-'   .", curses.color_pair(7))
-    cat_box.addstr(10, 0, "   '  `+.;  ;  '      :",curses.color_pair(7))
-    cat_box.addstr(11, 0, "   :  '  |    ;       ;-.",curses.color_pair(7))
-    cat_box.addstr(12, 0, "   ; '   : :`-:     _.`* ;",curses.color_pair(7))
-    cat_box.addstr(13, 0, ".*' /  .*' ; .*`- +'  `*'",curses.color_pair(7))
-    cat_box.addstr(14, 0, "`*-*   `*-*  `*-*'",curses.color_pair(7))
-    #cat_box.addstr(4, 4 + len("    : _   '  \."), "KUKI", curses.color_pair(7))
+    if use_cat:
+        try: 
+            cat_box = curses.newwin(15, 28, 27, 1)
+            cat_box.addstr(0, 0, r" _", curses.color_pair(7))
+            cat_box.addstr(1, 0, r" \`*-", curses.color_pair(7))
+            cat_box.addstr(2, 0, r" )  _`-.", curses.color_pair(7))
+            cat_box.addstr(3, 0, r" .  : `. .", curses.color_pair(7))
+            cat_box.addstr(4, 0, r" : _   '  \.", curses.color_pair(7))
+            cat_box.addstr(5, 0, r" ; *` _.   `*-._ ", curses.color_pair(7))
+            cat_box.addstr(6, 0, r" `-.-'          `-.", curses.color_pair(7))
+            cat_box.addstr(7, 0, r"   ; KUKI  `       `.", curses.color_pair(7))
+            cat_box.addstr(8, 0, r"   :.       .        \.", curses.color_pair(7))
+            cat_box.addstr(9, 0, r"   . \  .   :   .-'   .", curses.color_pair(7))
+            cat_box.addstr(10, 0, r"   '  `+.;  ;  '      :",curses.color_pair(7))
+            cat_box.addstr(11, 0, r"   :  '  |    ;       ;-.",curses.color_pair(7))
+            cat_box.addstr(12, 0, r"   ; '   : :`-:     _.`* ;",curses.color_pair(7))
+            cat_box.addstr(13, 0, r".*' /  .*' ; .*`- +'  `*'",curses.color_pair(7))
+            cat_box.addstr(14, 0, r"`*-*   `*-*  `*-*'",curses.color_pair(7))
+            #cat_box.addstr(4, 4 + len("    : _   '  \."), "KUKI", curses.color_pair(7))
+
+        except Exception:
+            print("Error printing too screen, perhaps your terminal is too small,\n you can try the version without the cat :(")
+            exit()
 
     current_time = datetime.datetime.now()                      
     last_time_stamp = current_time.time()
@@ -505,14 +528,19 @@ def __main__(stdscr):
     status.attroff(curses.color_pair(1))
 
     #===============SHOW ALL BOXES=========================#
-    stdscr.noutrefresh()
-    cat_box.noutrefresh()
-    main_box.noutrefresh()
-    time_box.noutrefresh()
-    text_box.noutrefresh()
-    found_satelites_box.noutrefresh()
-    status.noutrefresh()
-    curses.doupdate()
+    try:
+        stdscr.noutrefresh()
+        main_box.noutrefresh()
+        time_box.noutrefresh()
+        text_box.noutrefresh()
+        found_satelites_box.noutrefresh()
+        status.noutrefresh()
+        if use_cat:
+            cat_box.noutrefresh()
+        curses.doupdate()
+    except Exception:
+        print("Error printing too screen, perhaps your terminal is too small :(")
+        exit()
 
     last_update = 0 
     stdscr.timeout(100)
@@ -542,11 +570,14 @@ def __main__(stdscr):
             status.addstr(0, 2, f" Last updated: {last_time_stamp} ".ljust(cols - 7))
             status.addstr(0, cols - 3 - len("Press q or Q to exit  "), "Press q or Q to exit ")
             status.attroff(curses.color_pair(1))
-
-        main_box.noutrefresh()
-        time_box.noutrefresh()
-        status.noutrefresh()
-        found_satelites_box.noutrefresh()
+        try:
+            main_box.noutrefresh()
+            time_box.noutrefresh()
+            status.noutrefresh()
+            found_satelites_box.noutrefresh()
+        except Exception:
+            print("Error printing too screen, perhaps your terminal is too small :(")
+            exit()
         
         key = stdscr.getch()
         if key in (ord('q'), ord('Q')):
@@ -554,5 +585,13 @@ def __main__(stdscr):
             os.system('clear')
             break
         curses.doupdate()
-curses.wrapper(__main__)
+
+if __name__ == "__main__":
+    argument_parser = argparse.ArgumentParser(description="COUNTRY GPS TOOL")
+    argument_parser.add_argument("-n", "--nocat", action="store_true", help="Hides the KUKI image from displaying")
+    parsed_args = argument_parser.parse_args()
+    use_cat = not parsed_args.nocat
+    gps = gps_get()
+    fix = gps.get_fix()
+    curses.wrapper(main)
     
