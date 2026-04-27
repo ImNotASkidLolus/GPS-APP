@@ -17,6 +17,8 @@ You have to have GPSd module for python installed
 pip install gps
 #or
 pip3 install gps
+#for some distros the best would be
+sudo apt install python3-gps
 ```
 To run you just use:
 ```bash
