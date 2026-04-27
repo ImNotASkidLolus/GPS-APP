@@ -456,8 +456,8 @@ def __main__(stdscr):
                 found_satelites_box.addstr(2, 2+len("ID: "), "N/A  ",curses.color_pair(4))
                 found_satelites_box.addstr(2 , 9 + len("n/a"), "SNR: ", curses.color_pair(3))
                 found_satelites_box.addstr(2, 12 + len("SNR: "), "N/A", curses.color_pair(4))
-                found_satelites_box.addstr(2, 21, "USED: ",curses.color_pair(3))
-                found_satelites_box.addstr(2, 21 + len("USED"), "N/A", curses.color_pair(4))
+                found_satelites_box.addstr(2, 24, "USED: ",curses.color_pair(3))
+                found_satelites_box.addstr(2, 24 + len("USED: "), "N/A", curses.color_pair(4))
             else:
                 for prn, used, snr in sat:
                     found_satelites_box.addstr(i , 2, f"ID: ", curses.color_pair(3))
@@ -474,8 +474,8 @@ def __main__(stdscr):
             found_satelites_box.addstr(2, 2+len("ID: "), "N/A  ",curses.color_pair(4))
             found_satelites_box.addstr(2 , 9 + len("n/a"), "SNR: ", curses.color_pair(3))
             found_satelites_box.addstr(2, 12 + len("SNR: "), "N/A", curses.color_pair(4))
-            found_satelites_box.addstr(2, 21, "USED: ",curses.color_pair(3))
-            found_satelites_box.addstr(2, 21 + len("USED"), "N/A", curses.color_pair(4))
+            found_satelites_box.addstr(2, 24, "USED: ",curses.color_pair(3))
+            found_satelites_box.addstr(2, 24 + len("USED: "), "N/A", curses.color_pair(4))
 
     #=======================KUKI THE CAT BOX=================================#
     cat_box = curses.newwin(15, 28, 27, 1)
