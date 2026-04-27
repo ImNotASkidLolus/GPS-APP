@@ -3,7 +3,7 @@
 The app was basically made for my hackberry and was not tested for other devices, but probably this code works for every system that will run gpsd(GPS daemon). Basically all unix based systems Mac, Linux, Free BSD. Please notify me for any issues of bugs to fix or maybe even features to add ;)<br>
 P.S. please note that the images might be outdated, but I try to keep them up to date
 
-<img src="./images/image.png" alt="main display image" width="500px">
+<img src="./images/image.png" alt="main display image" width="1000px">
 <img src="./images/hackberry.jpeg" alt="main display image" width="500px">
 
 # USAGE
