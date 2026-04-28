@@ -25,7 +25,7 @@ To run you just use:
 python3 Country.py # or whatever you save this file as
 ```
 ## Options
-`-n, --nocat` - disables the display of the cat
+`-n, --nocat` - disables the display of the cat<br>
 `-f, --forcecat` - forces the cat to showup
 
 
