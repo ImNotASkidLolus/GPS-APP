@@ -371,42 +371,46 @@ def main(stdscr):
         exit()
 
     def draw_main_box():
-        main_box.attron(curses.color_pair(2))
-        main_box.box()
-        main_box.attroff(curses.color_pair(2))
-        
-        main_box.addstr(1,5, " Current gps location: ", curses.color_pair(1))
-        main_box.addstr(2,2, "Longitude: ", curses.color_pair(3))
-        main_box.addstr(2,2 + len("Longitude: "), f"{gps.lon}", curses.color_pair(4))
-        main_box.addstr(3,2, "Latitude: ", curses.color_pair(3))
-        main_box.addstr(3,2 + len("Latitude: "), f"{gps.lat}", curses.color_pair(4))
-        main_box.addstr(4,2, "Altitude:", curses.color_pair(3))
-        main_box.addstr(4,2 + len("Altitude: "), f"{gps.alt}m", curses.color_pair(4))
-        main_box.addstr(5,2, "Position error(m): ", curses.color_pair(3))
-        main_box.addstr(5,2 + len("position error(m): "), f"{gps.get_range_of_position}", curses.color_pair(4))
-        main_box.addstr(6,2, "Current country: ", curses.color_pair(3))
-        main_box.addstr(6,2 + len("Current country: "), f"{current_country}", curses.color_pair(4))
-        main_box.addstr(7,2, "Current grid square: ", curses.color_pair(3))
-        main_box.addstr(7,2+len("current grid square: "), f"{gps.grid_square_position}", curses.color_pair(4))
-        main_box.addstr(8,2, "Current speed(m/s): ", curses.color_pair(3))
-        main_box.addstr(8,2 + len("Current speed(m/s): "),f"{gps.speed}", curses.color_pair(4))
-        main_box.addstr(9,2, "Current speed(km/h): ", curses.color_pair(3))
-        main_box.addstr(9,2 + len("Current speed(km/h): "),f"{round(gps.speed * 3.6, 2)}", curses.color_pair(4))
-        main_box.addstr(10,2,"Speed error(m/s, km/h): ", curses.color_pair(3))
-        if gps.speederr < 50:
-            main_box.addstr(10,2 + len("speed error(m/s, km/h): "), f"{gps.speederr:.1f}, {round(gps.speederr * 3.6,1)}", curses.color_pair(4))
-        else:
-            main_box.addstr(10,2 + len("speed error(m/s, km/h): "), "Stationary", curses.color_pair(4))
-        main_box.addstr(11,2, "Climb rate(m/s): ", curses.color_pair(3))
-        main_box.addstr(11,2 + len("Climb rate(m/s): "), f"{gps.climb}", curses.color_pair(4))
-        main_box.addstr(12,2, "Heading: ", curses.color_pair(3))
-        main_box.addstr(12,2 + len("Heading: "), f"{head}", curses.color_pair(4))
-        main_box.addstr(13,2, "Bearing: ", curses.color_pair(3))
-        main_box.addstr(13,2 + len("Bearing: "), f"{bear}°T", curses.color_pair(4))
-        main_box.addstr(14,2, "Used satellites: ", curses.color_pair(3))
-        main_box.addstr(14, 2 + len("used satellites: "), f"{gps.usat}", curses.color_pair(4))
-        main_box.addstr(15,2, "Satellites found: ", curses.color_pair(3))
-        main_box.addstr(15,2+len("satellites found: "), f"{gps.nsat}", curses.color_pair(4))
+        try:
+            main_box.attron(curses.color_pair(2))
+            main_box.box()
+            main_box.attroff(curses.color_pair(2))
+            
+            main_box.addstr(1,5, " Current gps location: ", curses.color_pair(1))
+            main_box.addstr(2,2, "Longitude: ", curses.color_pair(3))
+            main_box.addstr(2,2 + len("Longitude: "), f"{gps.lon}", curses.color_pair(4))
+            main_box.addstr(3,2, "Latitude: ", curses.color_pair(3))
+            main_box.addstr(3,2 + len("Latitude: "), f"{gps.lat}", curses.color_pair(4))
+            main_box.addstr(4,2, "Altitude:", curses.color_pair(3))
+            main_box.addstr(4,2 + len("Altitude: "), f"{gps.alt}m", curses.color_pair(4))
+            main_box.addstr(5,2, "Position error(m): ", curses.color_pair(3))
+            main_box.addstr(5,2 + len("position error(m): "), f"{gps.get_range_of_position}", curses.color_pair(4))
+            main_box.addstr(6,2, "Current country: ", curses.color_pair(3))
+            main_box.addstr(6,2 + len("Current country: "), f"{current_country}", curses.color_pair(4))
+            main_box.addstr(7,2, "Current grid square: ", curses.color_pair(3))
+            main_box.addstr(7,2+len("current grid square: "), f"{gps.grid_square_position}", curses.color_pair(4))
+            main_box.addstr(8,2, "Current speed(m/s): ", curses.color_pair(3))
+            main_box.addstr(8,2 + len("Current speed(m/s): "),f"{gps.speed}", curses.color_pair(4))
+            main_box.addstr(9,2, "Current speed(km/h): ", curses.color_pair(3))
+            main_box.addstr(9,2 + len("Current speed(km/h): "),f"{round(gps.speed * 3.6, 2)}", curses.color_pair(4))
+            main_box.addstr(10,2,"Speed error(m/s, km/h): ", curses.color_pair(3))
+            if gps.speederr < 50:
+                main_box.addstr(10,2 + len("speed error(m/s, km/h): "), f"{gps.speederr:.1f}, {round(gps.speederr * 3.6,1)}", curses.color_pair(4))
+            else:
+                main_box.addstr(10,2 + len("speed error(m/s, km/h): "), "Stationary", curses.color_pair(4))
+            main_box.addstr(11,2, "Climb rate(m/s): ", curses.color_pair(3))
+            main_box.addstr(11,2 + len("Climb rate(m/s): "), f"{gps.climb}", curses.color_pair(4))
+            main_box.addstr(12,2, "Heading: ", curses.color_pair(3))
+            main_box.addstr(12,2 + len("Heading: "), f"{head}", curses.color_pair(4))
+            main_box.addstr(13,2, "Bearing: ", curses.color_pair(3))
+            main_box.addstr(13,2 + len("Bearing: "), f"{bear}°T", curses.color_pair(4))
+            main_box.addstr(14,2, "Used satellites: ", curses.color_pair(3))
+            main_box.addstr(14, 2 + len("used satellites: "), f"{gps.usat}", curses.color_pair(4))
+            main_box.addstr(15,2, "Satellites found: ", curses.color_pair(3))
+            main_box.addstr(15,2+len("satellites found: "), f"{gps.nsat}", curses.color_pair(4))
+        except Exception:
+            print("Error printing too screen, perhaps your terminal is too small :(")
+            exit()
     #==================CURRENT TIME BOX======================#
     try:
         time_box = curses.newwin(5, 38, 15, int(cols/2))
@@ -419,15 +423,18 @@ def main(stdscr):
         exit()
 
     def draw_time_box():
-        time_box.attron(curses.color_pair(2))
-        time_box.box()
-        time_box.attroff(curses.color_pair(2))
+        try:
+            time_box.attron(curses.color_pair(2))
+            time_box.box()
+            time_box.attroff(curses.color_pair(2))
 
-        time_box.addstr(1, 6, " Current GPS time(UTC): ", curses.color_pair(1))
-        time_box.addstr(2, 2, f"{gps.time}", curses.color_pair(4))
-        time_box.addstr(3, 2, f"Time error(s): ", curses.color_pair(3))
-        time_box.addstr(3, 2+len("time error(s): "), f"{gps.timeerr}", curses.color_pair(4))
-
+            time_box.addstr(1, 6, " Current GPS time(UTC): ", curses.color_pair(1))
+            time_box.addstr(2, 2, f"{gps.time}", curses.color_pair(4))
+            time_box.addstr(3, 2, f"Time error(s): ", curses.color_pair(3))
+            time_box.addstr(3, 2+len("time error(s): "), f"{gps.timeerr}", curses.color_pair(4))
+        except Exception:
+            print("Error printing too screen, perhaps your terminal is too small :(")
+            exit()
     #===================HEADER TEXT BOX======================#
     try:
         text_box = curses.newwin(14, cols - 2, 1, 1)
@@ -460,39 +467,43 @@ def main(stdscr):
         exit()
 
     def draw_satelite_info():
-        found_satelites_box.attron(curses.color_pair(2))
-        found_satelites_box.box()
-        found_satelites_box.attroff(curses.color_pair(2))
+        try:
+            found_satelites_box.attron(curses.color_pair(2))
+            found_satelites_box.box()
+            found_satelites_box.attroff(curses.color_pair(2))
 
-        found_satelites_box.addstr(1, 9, " Satelites found: ", curses.color_pair(1))
-        i = 2
-        if (fix):
-            sat = get_satelite_info()
-            if gps.nsat == 0:
-                found_satelites_box.addstr(2 , 2, "ID: ", curses.color_pair(3))
+            found_satelites_box.addstr(1, 9, " Satelites found: ", curses.color_pair(1))
+            i = 2
+            if (fix):
+                sat = get_satelite_info()
+                if gps.nsat == 0:
+                    found_satelites_box.addstr(2 , 2, "ID: ", curses.color_pair(3))
+                    found_satelites_box.addstr(2, 2+len("ID: "), "N/A  ",curses.color_pair(4))
+                    found_satelites_box.addstr(2 , 9 + len("n/a"), "SNR: ", curses.color_pair(3))
+                    found_satelites_box.addstr(2, 12 + len("SNR: "), "N/A", curses.color_pair(4))
+                    found_satelites_box.addstr(2, 24, "USED: ",curses.color_pair(3))
+                    found_satelites_box.addstr(2, 24 + len("USED: "), "N/A", curses.color_pair(4))
+                else:
+                    for prn, used, snr in sat:
+                        found_satelites_box.addstr(i , 2, f"ID: ", curses.color_pair(3))
+                        found_satelites_box.addstr(i, 2 + len("ID: "), f"{prn}  ",curses.color_pair(4))
+                        found_satelites_box.addstr(i , 12, f"SNR: ", curses.color_pair(3))
+                        found_satelites_box.addstr(i, 12 + len("SNR: "), f"{int(snr)}dB  ", curses.color_pair(4))
+                        found_satelites_box.addstr(i, 24, f"USED: ",curses.color_pair(3))
+                        found_satelites_box.addstr(i, 24 + len("used: "), f"{used}",curses.color_pair(4))
+                        if i < 10:
+                            i = i+1
+                        else:
+                            i = 2
+            else:
                 found_satelites_box.addstr(2, 2+len("ID: "), "N/A  ",curses.color_pair(4))
                 found_satelites_box.addstr(2 , 9 + len("n/a"), "SNR: ", curses.color_pair(3))
                 found_satelites_box.addstr(2, 12 + len("SNR: "), "N/A", curses.color_pair(4))
                 found_satelites_box.addstr(2, 24, "USED: ",curses.color_pair(3))
                 found_satelites_box.addstr(2, 24 + len("USED: "), "N/A", curses.color_pair(4))
-            else:
-                for prn, used, snr in sat:
-                    found_satelites_box.addstr(i , 2, f"ID: ", curses.color_pair(3))
-                    found_satelites_box.addstr(i, 2 + len("ID: "), f"{prn}  ",curses.color_pair(4))
-                    found_satelites_box.addstr(i , 12, f"SNR: ", curses.color_pair(3))
-                    found_satelites_box.addstr(i, 12 + len("SNR: "), f"{int(snr)}dB  ", curses.color_pair(4))
-                    found_satelites_box.addstr(i, 24, f"USED: ",curses.color_pair(3))
-                    found_satelites_box.addstr(i, 24 + len("used: "), f"{used}",curses.color_pair(4))
-                    if i < 10:
-                        i = i+1
-                    else:
-                        i = 2
-        else:
-            found_satelites_box.addstr(2, 2+len("ID: "), "N/A  ",curses.color_pair(4))
-            found_satelites_box.addstr(2 , 9 + len("n/a"), "SNR: ", curses.color_pair(3))
-            found_satelites_box.addstr(2, 12 + len("SNR: "), "N/A", curses.color_pair(4))
-            found_satelites_box.addstr(2, 24, "USED: ",curses.color_pair(3))
-            found_satelites_box.addstr(2, 24 + len("USED: "), "N/A", curses.color_pair(4))
+        except Exception:
+            print("Error printing too screen, perhaps your terminal is too small :(")
+            exit()
 
     #=======================KUKI THE CAT BOX=================================#
     if rows > 47 and use_cat:
