@@ -6,7 +6,7 @@ P.S. please note that the images might be outdated, but I try to keep them up to
 <img src="./images/image.png" alt="main display image" width="1000px">
 <img src="./images/hackberry.jpeg" alt="main display image" width="500px">
 
-# USAGE
+## USAGE
 You have to have gps daemon installed(gpsd)
 ```bash
 sudo apt install gpsd gpsd-clients # for debian/ubuntu
@@ -24,6 +24,10 @@ To run you just use:
 ```bash
 python3 Country.py # or whatever you save this file as
 ```
+## Options
+`-n, --nocat` - disables the display of the cat
+`-f, --forcecat` - forces the cat to showup
+
 
 # WHAT'S WITH THE CAT?
 Thats my cat Kuki if you don't like him just use this:

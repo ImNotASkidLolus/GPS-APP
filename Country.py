@@ -506,7 +506,7 @@ def main(stdscr):
             exit()
 
     #=======================KUKI THE CAT BOX=================================#
-    if rows > 47 and use_cat:
+    if (rows > 47 or force_cat) and use_cat:
         try: 
             cat_box = curses.newwin(15, 28, 27, 1)
             cat_box.addstr(0, 0, r" _", curses.color_pair(7))
@@ -546,7 +546,7 @@ def main(stdscr):
         text_box.noutrefresh()
         found_satelites_box.noutrefresh()
         status.noutrefresh()
-        if rows > 47 and use_cat:
+        if (rows > 47 or force_cat) and use_cat:
             cat_box.noutrefresh()
         curses.doupdate()
     except Exception:
@@ -600,8 +600,10 @@ def main(stdscr):
 if __name__ == "__main__":
     argument_parser = argparse.ArgumentParser(description="COUNTRY GPS TOOL")
     argument_parser.add_argument("-n", "--nocat", action="store_true", help="Hides the KUKI image from displaying")
+    argument_parser.add_argument("-f", "--forcecat", action="store_true", help="Force the cat to show up")
     parsed_args = argument_parser.parse_args()
     use_cat = not parsed_args.nocat
+    force_cat = parsed_args.forcecat
     gps = gps_get()
     fix = gps.get_fix()
     curses.wrapper(main)
