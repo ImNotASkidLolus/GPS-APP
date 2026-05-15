@@ -348,7 +348,6 @@ def main(stdscr):
     curses.init_pair(6, curses.COLOR_YELLOW, curses.COLOR_WHITE) #color of the KUKI text
     curses.init_pair(7, curses.COLOR_YELLOW, -1) #color of KUKI the cat
 
-    rows, cols = stdscr.getmaxyx()
     current_country = "N/A"
     if fix and gps.has_fix:
         current_country = get_country(gps.lat, gps.lon)
