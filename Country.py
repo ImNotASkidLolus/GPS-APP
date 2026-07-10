@@ -3,6 +3,7 @@ import time
 import datetime
 import os
 import argparse
+import threading
 
 try:
     import gps as gpsd_module
@@ -239,6 +240,9 @@ class gps_get():
         self.satelites = None
         self.usat = 0 #number of used satellites
         self.nsat = 0 #number of found satellites
+        self._is_set = threading.Event()
+    def stop(self):
+        self._is_set.set()
     def get_fix(self):
         if not GPS_AVAILABLE:
             return "Error: GPS NOT FOUND!"
@@ -249,40 +253,37 @@ class gps_get():
             except Exception:
                 return False
     def update_fix(self):
-        if self.session is None:
-            return False; 
-        try:
-            a = False
-            b = False
-            for _ in range(20):
-                report = self.session.next()
-                if report['class'] == 'TPV': #looks for the TPV class data and updates the gps_get class
-                    self.fix   = getattr(report, 'mode',  1)
-                    self.lat   = getattr(report, 'lat',   "N/A")
-                    self.lon   = getattr(report, 'lon',   "N/A")
-                    self.laterr = getattr(report, 'epy', "N/A")
-                    self.lonerr = getattr(report, 'epx', "N/A")
-                    self.alt   = getattr(report, 'alt',   "N/A")
-                    self.speed = getattr(report, 'speed', 0)
-                    self.speederr = getattr(report, 'eps', 0)
-                    self.time = getattr(report, 'time', datetime.datetime.now())
-                    self.timeerr = getattr(report, 'ept', "N/A")
-                    self.heading = getattr(report, 'track', 0)
-                    self.climb = getattr(report, 'climb', "N/A")
-                    a = True
-                elif report['class'] == 'SKY': #looks for the SKY class data and updates the gps_get class
-                    usat = getattr(report, 'uSat', None)
-                    nsat = getattr(report, 'nSat', None)
-                    satelites = getattr(report, 'satellites', [])
-                    if nsat and usat != None:
-                        self.nsat = nsat
-                        self.usat = usat
-                    if satelites != []:
-                        self.satelites = satelites
-                    b = True
-            return a or b
-        except Exception:
-            return False
+        while not self._is_set.is_set():
+            if self.session is None:
+                break
+            try:
+                for _ in range(20):
+                    report = self.session.next()
+                    if report['class'] == 'TPV': #looks for the TPV class data and updates the gps_get class
+                        self.fix   = getattr(report, 'mode',  1)
+                        self.lat   = getattr(report, 'lat',   "N/A")
+                        self.lon   = getattr(report, 'lon',   "N/A")
+                        self.laterr = getattr(report, 'epy', "N/A")
+                        self.lonerr = getattr(report, 'epx', "N/A")
+                        self.alt   = getattr(report, 'alt',   "N/A")
+                        self.speed = getattr(report, 'speed', 0)
+                        self.speederr = getattr(report, 'eps', 0)
+                        self.time = getattr(report, 'time', datetime.datetime.now())
+                        self.timeerr = getattr(report, 'ept', "N/A")
+                        self.heading = getattr(report, 'track', 0)
+                        self.climb = getattr(report, 'climb', "N/A")
+                    elif report['class'] == 'SKY': #looks for the SKY class data and updates the gps_get class
+                        usat = getattr(report, 'uSat', None)
+                        nsat = getattr(report, 'nSat', None)
+                        satelites = getattr(report, 'satellites', [])
+                        if nsat and usat != None:
+                            self.nsat = nsat
+                            self.usat = usat
+                        if satelites != []:
+                            self.satelites = satelites
+                time.sleep(0.5)
+            except Exception:
+                print("Polling error")
     @property
     def has_fix(self):
         return self.fix >= 2 and self.lat is not None and self.lon is not None
@@ -332,7 +333,6 @@ def get_satelite_info():
         return sat
     return [("N/A", "N/A", "N/A")]
 def main(stdscr):
-    fix = gps.update_fix()     # None if not provided
     bear, head = gps.get_head_str
     rows, cols = stdscr.getmaxyx()
     curses.start_color()
@@ -563,7 +563,6 @@ def main(stdscr):
         #============UPDATE DELAY TO PREVENT CRASHES AND MALFUNCTIONS===============#
         if now - last_update >= 1:
             last_time_stamp = current_time.time()
-            fix = gps.update_fix()
             last_update = now
             bear, head = gps.get_head_str
             if fix and gps.has_fix:
@@ -605,5 +604,14 @@ if __name__ == "__main__":
     force_cat = parsed_args.forcecat
     gps = gps_get()
     fix = gps.get_fix()
+    gps_thread = threading.Thread(target=gps.update_fix, daemon=True)
+    gps_thread.start()
     curses.wrapper(main)
+    gps_thread.stop()
+    if gps_thread:
+        gps_thread.join(timeout=1)
+    print("\nGPS class data:")
+    for key, value in vars(gps).items():
+        print(f"{key}: {value}")
+    
     
