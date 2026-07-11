@@ -607,7 +607,7 @@ if __name__ == "__main__":
     gps_thread = threading.Thread(target=gps.update_fix, daemon=True)
     gps_thread.start()
     curses.wrapper(main)
-    gps_thread.stop()
+    gps.stop()
     if gps_thread:
         gps_thread.join(timeout=1)
     print("\nGPS class data:")
