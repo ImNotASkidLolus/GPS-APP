@@ -130,7 +130,7 @@ class gps_get():
         location = shapely.Point(self.lon, self.lat)
         features = data.get('features', [data])
         for feature in features:
-            polygon = shapely.shape(feature['geometry'])
+            polygon = shapely.Polygon(feature['geometry'])
             if polygon.contains(location):
                 country_name = feature.get('properties', {}).get('name', 'Unknown Country')
                 return country_name
