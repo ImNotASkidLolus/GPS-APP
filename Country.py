@@ -6,7 +6,7 @@ import argparse
 import threading
 import math
 import json
-import shapely
+from shapely.geometry import shape, Point
 try:
     import gps as gpsd_module
     GPS_AVAILABLE = True
@@ -45,6 +45,7 @@ class gps_get():
         self.satelites = None
         self.usat = 0 #number of used satellites
         self.nsat = 0 #number of found satellites
+        self.country_name = ""
         self._is_set = threading.Event()
     def stop(self):
         self._is_set.set()
@@ -127,12 +128,13 @@ class gps_get():
         with open("./map.geojson") as f:
             data = json.load(f)
 
-        location = shapely.Point(self.lon, self.lat)
+        location = Point(self.lon, self.lat)
         features = data.get('features', [data])
         for feature in features:
-            polygon = shapely.Polygon(feature['geometry'])
+            polygon = shape(feature['geometry'])
             if polygon.contains(location):
-                country_name = feature.get('properties', {}).get('name', 'Unknown Country')
+                country_name = feature.get('properties', {}).get('NAME', 'Unknown Country')
+                self.country_name = country_name
                 return country_name
         return "Ocean"
 
@@ -197,16 +199,16 @@ def main(stdscr):
             main_box.addstr(5,2, "Position error(m): ", curses.color_pair(3))
             main_box.addstr(5,2 + len("position error(m): "), f"{gps.get_range_of_position}", curses.color_pair(4))
             main_box.addstr(6,2, "Current country: ", curses.color_pair(3))
-            main_box.addstr(6,2 + len("Current country: "), f"{current_country}", curses.color_pair(4))
+            main_box.addstr(6,2 + len("Current country: "), f"{current_country[:10]}", curses.color_pair(4))
             main_box.addstr(7,2, "Current grid square: ", curses.color_pair(3))
             main_box.addstr(7,2+len("current grid square: "), f"{gps.grid_square_position}", curses.color_pair(4))
             main_box.addstr(8,2, "Current speed(m/s): ", curses.color_pair(3))
             main_box.addstr(8,2 + len("Current speed(m/s): "),f"{gps.speed}", curses.color_pair(4))
             main_box.addstr(9,2, "Current speed(km/h): ", curses.color_pair(3))
-            main_box.addstr(9,2 + len("Current speed(km/h): "),f"{round(gps.speed * 3.6, 2)}", curses.color_pair(4))
+            main_box.addstr(9,2 + len("Current speed(km/h): "),f"{round(gps.speed * 3.6, 1)}", curses.color_pair(4))
             main_box.addstr(10,2,"Speed error(m/s, km/h): ", curses.color_pair(3))
             if gps.speederr < 50:
-                main_box.addstr(10,2 + len("speed error(m/s, km/h): "), f"{gps.speederr:.1f}, {round(gps.speederr * 3.6,1)}", curses.color_pair(4))
+                main_box.addstr(10,2 + len("speed error(m/s, km/h): "), f"{round(gps.speederr,1)}, {round(gps.speederr * 3.6,1)}", curses.color_pair(4))
             else:
                 main_box.addstr(10,2 + len("speed error(m/s, km/h): "), "Stationary", curses.color_pair(4))
             main_box.addstr(11,2, "Climb rate(m/s): ", curses.color_pair(3))
@@ -219,8 +221,9 @@ def main(stdscr):
             main_box.addstr(14, 2 + len("used satellites: "), f"{gps.usat}", curses.color_pair(4))
             main_box.addstr(15,2, "Satellites found: ", curses.color_pair(3))
             main_box.addstr(15,2+len("satellites found: "), f"{gps.nsat}", curses.color_pair(4))
-        except Exception:
-            print("Error printing too screen, perhaps your terminal is too small :(")
+        except Exception as e:
+            print("Error printing too screen, perhaps your terminal is too small :( main")
+            print(e)
             exit()
     #==================CURRENT TIME BOX======================#
     try:
@@ -230,8 +233,7 @@ def main(stdscr):
         time_box.attroff(curses.color_pair(2))
         time_box.addstr(1,1, "Wait for content to load", curses.color_pair(3))
     except Exception:
-        print("Error printing too screen, perhaps your terminal is too small :(")
-        exit()
+        print("Error printing too screen, perhaps your terminal is too small :( time")
 
     def draw_time_box():
         try:
@@ -244,8 +246,7 @@ def main(stdscr):
             time_box.addstr(3, 2, f"Time error(s): ", curses.color_pair(3))
             time_box.addstr(3, 2+len("time error(s): "), f"{gps.timeerr}", curses.color_pair(4))
         except Exception:
-            print("Error printing too screen, perhaps your terminal is too small :(")
-            exit()
+            print("Error printing too screen, perhaps your terminal is too small :( time show")
     #===================HEADER TEXT BOX======================#
     try:
         text_box = curses.newwin(14, cols - 2, 1, 1)
@@ -313,7 +314,7 @@ def main(stdscr):
                 found_satelites_box.addstr(2, 24, "USED: ",curses.color_pair(3))
                 found_satelites_box.addstr(2, 24 + len("USED: "), "N/A", curses.color_pair(4))
         except Exception:
-            print("Error printing too screen, perhaps your terminal is too small :(")
+            print("Error printing too screen, perhaps your terminal is too small :( satellites")
             exit()
 
     #=======================KUKI THE CAT BOX=================================#
@@ -361,7 +362,7 @@ def main(stdscr):
             cat_box.noutrefresh()
         curses.doupdate()
     except Exception:
-        print("Error printing too screen, perhaps your terminal is too small :(")
+        print("Error printing too screen, perhaps your terminal is too small :( updating")
         exit()
 
     last_update = 0 
