@@ -104,7 +104,7 @@ class gps_get():
     def get_range_of_position(self):
         err = "N/A"
         if self.laterr and self.lonerr != "N/A":
-            err = round(math.sqrt(self.laterr**2, self.lonerr**2),1)
+            err = round(math.sqrt(self.laterr**2 + self.lonerr**2),1)
         return err
     @property
     def grid_square_position(self):
