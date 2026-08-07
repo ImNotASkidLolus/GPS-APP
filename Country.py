@@ -243,7 +243,7 @@ def main(stdscr):
             exit()
     #==================CURRENT TIME BOX======================#
     try:
-        time_box = curses.newwin(5, 57, 15, int(cols/2))
+        time_box = curses.newwin(5, 38, 15, int(cols/2))
         time_box.attron(curses.color_pair(2))
         time_box.box()
         time_box.attroff(curses.color_pair(2))
@@ -257,7 +257,7 @@ def main(stdscr):
             time_box.box()
             time_box.attroff(curses.color_pair(2))
 
-            time_box.addstr(1, 1, " Current GPS time(UTC): ".center(55), curses.color_pair(1))
+            time_box.addstr(1, 1, " Current GPS time(UTC): ".center(36), curses.color_pair(1))
             time_box.addstr(2, 2, f"{gps.time}", curses.color_pair(4))
             time_box.addstr(3, 2, f"Time error(s): ", curses.color_pair(3))
             time_box.addstr(3, 2+len("time error(s): "), f"{gps.timeerr}", curses.color_pair(4))
