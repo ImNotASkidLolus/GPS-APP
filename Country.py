@@ -284,7 +284,7 @@ def main(stdscr):
 
     #==================SATELLITE INFO BOX===================#
     try:
-        found_satelites_box = curses.newwin(12, 57, 20, int(cols/2))
+        found_satelites_box = curses.newwin(12, 38, 20, int(cols/2))
         found_satelites_box.attron(curses.color_pair(2))
         found_satelites_box.box()
         found_satelites_box.attroff(curses.color_pair(2))
@@ -299,42 +299,39 @@ def main(stdscr):
             found_satelites_box.box()
             found_satelites_box.attroff(curses.color_pair(2))
 
-            found_satelites_box.addstr(1, 1, " Satelites found: ".center(55), curses.color_pair(1))
-            i = 2
+            found_satelites_box.addstr(1, 1, " Satelites found: ".center(36), curses.color_pair(1))
+            i = 3
             if (fix):
-                sat = get_satelite_info()
+                sat = gps.get_satelite_info()
                 if gps.nsat == 0:
-                    found_satelites_box.addstr(2 , 2, "ID: ", curses.color_pair(3))
-                    found_satelites_box.addstr(2, 2+len("ID: "), "N/A  ",curses.color_pair(4))
-                    found_satelites_box.addstr(2 , 9 + len("n/a"), "SNR: ", curses.color_pair(3))
-                    found_satelites_box.addstr(2, 12 + len("SNR: "), "N/A", curses.color_pair(4))
-                    found_satelites_box.addstr(2, 24, "USED: ",curses.color_pair(3))
-                    found_satelites_box.addstr(2, 24 + len("USED: "), "N/A", curses.color_pair(4))
-                    found_satelites_box.addstr(2, 38, "CONST: ", curses.color_pair(3))
-                    found_satelites_box.addstr(2, 38 + len("const: "), "N/A", curses.color_pair(4))
+                    found_satelites_box.addstr(2 , 2, "ID ", curses.color_pair(3))
+                    found_satelites_box.addstr(2, 6, "SNR",curses.color_pair(3))
+                    found_satelites_box.addstr(2 , 11, "USED",curses.color_pair(3))
+                    found_satelites_box.addstr(2, 18, "CONST",curses.color_pair(3))
+                    found_satelites_box.addstr(3, 2, "N/A",curses.color_pair(4))
+                    found_satelites_box.addstr(3, 6, "N/A",curses.color_pair(4))
+                    found_satelites_box.addstr(3, 11, "N/A",curses.color_pair(4))
+                    found_satelites_box.addstr(3, 18, "N/A",curses.color_pair(4))
+                    
                 else:
+                    found_satelites_box.addstr(2 , 2, "ID ", curses.color_pair(3))
+                    found_satelites_box.addstr(2, 6, "SNR",curses.color_pair(3))
+                    found_satelites_box.addstr(2 , 11, "USED",curses.color_pair(3))
+                    found_satelites_box.addstr(2, 18, "CONST",curses.color_pair(3))
                     for prn, used, snr, gnssid in sat:
-                        found_satelites_box.addstr(i , 2, f"ID: ", curses.color_pair(3))
-                        found_satelites_box.addstr(i, 2 + len("ID: "), f"{prn}  ",curses.color_pair(4))
-                        found_satelites_box.addstr(i , 12, f"SNR: ", curses.color_pair(3))
-                        found_satelites_box.addstr(i, 12 + len("SNR: "), f"{int(snr)}dB  ", curses.color_pair(4))
-                        found_satelites_box.addstr(i, 24, f"USED: ",curses.color_pair(3))
-                        found_satelites_box.addstr(i, 24 + len("used: "), f"{used}",curses.color_pair(4))
-                        found_satelites_box.addstr(i, 38, "CONST: ", curses.color_pair(3))
-                        found_satelites_box.addstr(i, 38 + len("const: "), get_constelation(gnssid), curses.color_pair(4))
-                        if i < 10:
+                        found_satelites_box.addstr(i, 2, f"{prn}  ",curses.color_pair(4))
+                        found_satelites_box.addstr(i, 6, f"{int(snr)}dB  ", curses.color_pair(4))
+                        found_satelites_box.addstr(i, 11, f"{used}",curses.color_pair(4))
+                        found_satelites_box.addstr(i, 18, get_constelation(gnssid),curses.color_pair(4))
+                        if i < height - 2:
                             i = i+1
                         else:
-                            i = 2
+                            i = 3
             else:
-                found_satelites_box.addstr(2 , 2, "ID: ", curses.color_pair(3))
-                found_satelites_box.addstr(2, 2+len("ID: "), "N/A  ",curses.color_pair(4))
-                found_satelites_box.addstr(2 , 9 + len("n/a"), "SNR: ", curses.color_pair(3))
-                found_satelites_box.addstr(2, 12 + len("SNR: "), "N/A", curses.color_pair(4))
-                found_satelites_box.addstr(2, 24, "USED: ",curses.color_pair(3))
-                found_satelites_box.addstr(2, 24 + len("USED: "), "N/A", curses.color_pair(4))
-                found_satelites_box.addstr(2, 38, "CONST: ", curses.color_pair(3))
-                found_satelites_box.addstr(2, 38 + len("const: "), "N/A", curses.color_pair(4))
+                found_satelites_box.addstr(3, 2, "N/A",curses.color_pair(4))
+                found_satelites_box.addstr(3, 6, "N/A",curses.color_pair(4))
+                found_satelites_box.addstr(3, 11, "N/A",curses.color_pair(4))
+                found_satelites_box.addstr(3, 18, "N/A",curses.color_pair(4))
         except Exception:
             print("Error printing too screen, perhaps your terminal is too small :( satellites")
             exit()
