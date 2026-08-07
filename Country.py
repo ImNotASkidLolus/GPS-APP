@@ -138,14 +138,30 @@ class gps_get():
                 return country_name
         return "Ocean"
 
-
+def get_constelation(id):
+    if id == 0:
+        return "GPS(US)"
+    elif id == 1:
+        return "SBAS"
+    elif id == 2:
+        return "GALILEO(EU)"
+    elif id == 3:
+        return "BEIDOU(CN)"
+    elif id == 4:
+        return "IMES"
+    elif id == 5:
+        return "QZSS(JPN)"
+    elif id == 6:
+        return "GLONASS(RU)"
+    else:
+        return "N/A"
 def get_satelite_info():
     sat = []
     if gps.satelites is not None:
         for satellite in gps.satelites:
-            sat.append((satellite.get('PRN', 0), satellite.get('used', False), satellite.get('ss', 0)))
+            sat.append((satellite.get('PRN', 0), satellite.get('used', False), satellite.get('ss', 0), satellite.get('gnssid', "N/A")))
         return sat
-    return [("N/A", "N/A", "N/A")]
+    return [("N/A", "N/A", "N/A", "N/A")]
 def main(stdscr):
     bear, head = gps.get_head_str
     rows, cols = stdscr.getmaxyx()
@@ -189,7 +205,7 @@ def main(stdscr):
             main_box.box()
             main_box.attroff(curses.color_pair(2))
             
-            main_box.addstr(1,5, " Current gps location: ", curses.color_pair(1))
+            main_box.addstr(1,1, " Current gps location: ".center(36), curses.color_pair(1))
             main_box.addstr(2,2, "Longitude: ", curses.color_pair(3))
             main_box.addstr(2,2 + len("Longitude: "), f"{gps.lon}", curses.color_pair(4))
             main_box.addstr(3,2, "Latitude: ", curses.color_pair(3))
@@ -227,7 +243,7 @@ def main(stdscr):
             exit()
     #==================CURRENT TIME BOX======================#
     try:
-        time_box = curses.newwin(5, 38, 15, int(cols/2))
+        time_box = curses.newwin(5, 57, 15, int(cols/2))
         time_box.attron(curses.color_pair(2))
         time_box.box()
         time_box.attroff(curses.color_pair(2))
@@ -241,7 +257,7 @@ def main(stdscr):
             time_box.box()
             time_box.attroff(curses.color_pair(2))
 
-            time_box.addstr(1, 6, " Current GPS time(UTC): ", curses.color_pair(1))
+            time_box.addstr(1, 1, " Current GPS time(UTC): ".center(55), curses.color_pair(1))
             time_box.addstr(2, 2, f"{gps.time}", curses.color_pair(4))
             time_box.addstr(3, 2, f"Time error(s): ", curses.color_pair(3))
             time_box.addstr(3, 2+len("time error(s): "), f"{gps.timeerr}", curses.color_pair(4))
@@ -264,12 +280,11 @@ def main(stdscr):
         text_box.addstr(11,0, "███████╗╚██████╔╝╚██████╗██║  ██║   ██║   ██║╚██████╔╝██║ ╚████║ ".center(cols), curses.color_pair(5))
         text_box.addstr(12,0, "╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝ ".center(cols), curses.color_pair(5))
     except Exception:
-        print("Error printing too screen, perhaps your terminal is too small :(")
-        exit()
+        pass
 
     #==================SATELLITE INFO BOX===================#
     try:
-        found_satelites_box = curses.newwin(12, 38, 20, int(cols/2))
+        found_satelites_box = curses.newwin(12, 57, 20, int(cols/2))
         found_satelites_box.attron(curses.color_pair(2))
         found_satelites_box.box()
         found_satelites_box.attroff(curses.color_pair(2))
@@ -284,7 +299,7 @@ def main(stdscr):
             found_satelites_box.box()
             found_satelites_box.attroff(curses.color_pair(2))
 
-            found_satelites_box.addstr(1, 9, " Satelites found: ", curses.color_pair(1))
+            found_satelites_box.addstr(1, 1, " Satelites found: ".center(55), curses.color_pair(1))
             i = 2
             if (fix):
                 sat = get_satelite_info()
@@ -295,24 +310,31 @@ def main(stdscr):
                     found_satelites_box.addstr(2, 12 + len("SNR: "), "N/A", curses.color_pair(4))
                     found_satelites_box.addstr(2, 24, "USED: ",curses.color_pair(3))
                     found_satelites_box.addstr(2, 24 + len("USED: "), "N/A", curses.color_pair(4))
+                    found_satelites_box.addstr(2, 38, "CONST: ", curses.color_pair(3))
+                    found_satelites_box.addstr(2, 38 + len("const: "), "N/A", curses.color_pair(4))
                 else:
-                    for prn, used, snr in sat:
+                    for prn, used, snr, gnssid in sat:
                         found_satelites_box.addstr(i , 2, f"ID: ", curses.color_pair(3))
                         found_satelites_box.addstr(i, 2 + len("ID: "), f"{prn}  ",curses.color_pair(4))
                         found_satelites_box.addstr(i , 12, f"SNR: ", curses.color_pair(3))
                         found_satelites_box.addstr(i, 12 + len("SNR: "), f"{int(snr)}dB  ", curses.color_pair(4))
                         found_satelites_box.addstr(i, 24, f"USED: ",curses.color_pair(3))
                         found_satelites_box.addstr(i, 24 + len("used: "), f"{used}",curses.color_pair(4))
+                        found_satelites_box.addstr(i, 38, "CONST: ", curses.color_pair(3))
+                        found_satelites_box.addstr(i, 38 + len("const: "), get_constelation(gnssid), curses.color_pair(4))
                         if i < 10:
                             i = i+1
                         else:
                             i = 2
             else:
+                found_satelites_box.addstr(2 , 2, "ID: ", curses.color_pair(3))
                 found_satelites_box.addstr(2, 2+len("ID: "), "N/A  ",curses.color_pair(4))
                 found_satelites_box.addstr(2 , 9 + len("n/a"), "SNR: ", curses.color_pair(3))
                 found_satelites_box.addstr(2, 12 + len("SNR: "), "N/A", curses.color_pair(4))
                 found_satelites_box.addstr(2, 24, "USED: ",curses.color_pair(3))
                 found_satelites_box.addstr(2, 24 + len("USED: "), "N/A", curses.color_pair(4))
+                found_satelites_box.addstr(2, 38, "CONST: ", curses.color_pair(3))
+                found_satelites_box.addstr(2, 38 + len("const: "), "N/A", curses.color_pair(4))
         except Exception:
             print("Error printing too screen, perhaps your terminal is too small :( satellites")
             exit()
