@@ -323,7 +323,7 @@ def main(stdscr):
                         found_satelites_box.addstr(i, 6, f"{int(snr)}dB  ", curses.color_pair(4))
                         found_satelites_box.addstr(i, 11, f"{used}",curses.color_pair(4))
                         found_satelites_box.addstr(i, 18, get_constelation(gnssid),curses.color_pair(4))
-                        if i < height - 2:
+                        if i < 10:
                             i = i+1
                         else:
                             i = 3
