@@ -162,7 +162,21 @@ def get_satelite_info():
             sat.append((satellite.get('PRN', 0), satellite.get('used', False), satellite.get('ss', 0), satellite.get('gnssid', "N/A")))
         return sat
     return [("N/A", "N/A", "N/A", "N/A")]
+def log_sats():
+    new_satellites = []
+    if not os.path.exists("satellites.txt"):
+        open("satellites.txt","x")
+    with open("satellites.txt", "r") as f:
+        content = f.read()
+        for prn, gnssid in get_satelite_info():
+            if str(prn) not in content:
+                new_satellites.append((prn, gnssid))
+    with open("satellites.txt", "a") as f:
+        for sat in new_satellites:
+            f.write(f"{sat[0]} {sat[1]}\n")
+log_satellites = False
 def main(stdscr):
+    global log_satellites
     bear, head = gps.get_head_str
     rows, cols = stdscr.getmaxyx()
     curses.start_color()
@@ -327,6 +341,8 @@ def main(stdscr):
                             i = i+1
                         else:
                             i = 3
+                        if log_satellites:
+                            log_sats()
             else:
                 found_satelites_box.addstr(3, 2, "N/A",curses.color_pair(4))
                 found_satelites_box.addstr(3, 6, "N/A",curses.color_pair(4))
@@ -431,9 +447,11 @@ if __name__ == "__main__":
     argument_parser = argparse.ArgumentParser(description="COUNTRY GPS TOOL")
     argument_parser.add_argument("-n", "--nocat", action="store_true", help="Hides the KUKI image from displaying")
     argument_parser.add_argument("-f", "--forcecat", action="store_true", help="Force the cat to show up")
+    argument_parser.add_argument("-l", "--log-satellites", action="store_true", help="Logs the satellites found to a file called satellites.txt")
     parsed_args = argument_parser.parse_args()
     use_cat = not parsed_args.nocat
     force_cat = parsed_args.forcecat
+    log_satellites = parsed_args.log_satellites
     gps = gps_get()
     fix = gps.get_fix()
     gps_thread = threading.Thread(target=gps.update_fix, daemon=True)
