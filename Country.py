@@ -460,8 +460,5 @@ if __name__ == "__main__":
     gps.stop()
     if gps_thread:
         gps_thread.join(timeout=1)
-    print("\nGPS class data:")
-    for key, value in vars(gps).items():
-        print(f"{key}: {value}")
     
     
