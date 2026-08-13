@@ -302,7 +302,7 @@ def main(stdscr):
             found_satelites_box.addstr(1, 1, " Satelites found: ".center(36), curses.color_pair(1))
             i = 3
             if (fix):
-                sat = gps.get_satelite_info()
+                sat = get_satelite_info()
                 if gps.nsat == 0:
                     found_satelites_box.addstr(2 , 2, "ID ", curses.color_pair(3))
                     found_satelites_box.addstr(2, 6, "SNR",curses.color_pair(3))
