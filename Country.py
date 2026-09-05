@@ -7,6 +7,7 @@ import threading
 import math
 import json
 from shapely.geometry import shape, Point
+import csv
 try:
     import gps as gpsd_module
     GPS_AVAILABLE = True
@@ -26,7 +27,22 @@ except ImportError:
 # but probably this code works for every system that will run gpsd(GPS daemon).
 # Basically all unix based systems Mac, Linux, Free BSD      
 # Please notify me for any issues of bugs to fix or maybe even features to add ;)                                                                              
+filename = "log"
+WIGLE_HEADER = [
+    'WigleWifi-1.4',
+    'appRelease=Wardriver',
+    'model=custom',
+    'release=1.0',
+    'device=linux',
+    'display=wardrive',
+    'board=uconsole',
+    'brand=unknown',
+]
 
+WIGLE_COLS = [
+    'MAC','SSID','AuthMode','FirstSeen','Channel',
+    'CurrentLatitude','CurrentLongitude','AltitudeMeters','AccuracyMeters','Type'
+]
 class gps_get():
     def __init__(self):
         self.lat = 0 
@@ -125,7 +141,7 @@ class gps_get():
             return "Not found"
     
     def get_country(self): #Calculates which country the position give by the gps is based on the data in COUNTRY_BOUNDS
-        with open("./map.geojson") as f:
+        with open("/home/dragon/GPS-APP/map.geojson") as f:
             data = json.load(f)
 
         location = Point(self.lon, self.lat)
@@ -159,24 +175,94 @@ def get_satelite_info():
     sat = []
     if gps.satelites is not None:
         for satellite in gps.satelites:
-            sat.append((satellite.get('PRN', 0), satellite.get('used', False), satellite.get('ss', 0), satellite.get('gnssid', "N/A")))
-        return sat
+            sat.append((int(satellite.get('PRN', 0)), satellite.get('used', False), satellite.get('ss', 0), satellite.get('gnssid', "N/A")))
+        return sorted(sat)
     return [("N/A", "N/A", "N/A", "N/A")]
-def log_sats():
-    new_satellites = []
-    if not os.path.exists("satellites.txt"):
-        open("satellites.txt","x")
-    with open("satellites.txt", "r") as f:
-        content = f.read()
-        for prn, gnssid in get_satelite_info():
-            if str(prn) not in content:
-                new_satellites.append((prn, gnssid))
-    with open("satellites.txt", "a") as f:
-        for sat in new_satellites:
-            f.write(f"{sat[0]} {sat[1]}\n")
+def log_sats(lat,lon):
+    try:
+        new_satellites = []
+        if not os.path.exists(os.path.expanduser("~/satellites.txt")):
+            open(os.path.expanduser("~/satellites.txt"),"x")
+        with open(os.path.expanduser("~/satellites.txt"), "r") as f:
+            content = f.read()
+            for prn, used, ss, gnssid in get_satelite_info():
+                if str(prn) not in content:
+                    new_satellites.append((prn, gnssid))
+        with open(os.path.expanduser("~/satellites.txt"), "a") as f:
+            for sat in new_satellites:
+                f.write(f"{sat[0]} {get_constelation(sat[1])} {lat} {lon}\n")
+    except Exception as e:
+        print(e)
 log_satellites = False
+start_idx = 0
+
+def scan_aps():
+    global l_secs,l_channels,l_ssids,l_bssids, filename
+    seen = set()
+    filename = filename + "_" + str(datetime.datetime.now()) + ".csv"
+    with open(filename, 'w', newline='') as f:
+        f.write(','.join(WIGLE_HEADER) + '\n')
+        w = csv.writer(f)
+        w.writerow(WIGLE_COLS)
+    while not gps._is_set.is_set():
+        ssids = []
+        bssids = []
+        channels = []
+        secs = []
+        if not gps.fix:
+            time.sleep(0.5)
+            continue
+        try:
+            os.popen("nmcli dev wifi rescan")
+            netw = os.popen("nmcli -t -f SSID,BSSID,CHAN,SECURITY dev wifi list").read()
+            netw = netw.split('\n')
+            for line in netw:
+                if len(line) < 10:
+                    continue
+                line = line.split(':')
+                ssids.append(line[0])
+                bssid = line[1:6]   
+                n_bssid = ""
+                counter = 0
+                for i in bssid:
+                    n_bssid += str(i.strip("\\"))
+                    if counter < 4:
+                        n_bssid+=":"
+                        counter+=1
+                bssids.append(n_bssid)
+                channels.append(line[7])
+                secs.append(line[8])
+        except Exception as e:
+            print(e)
+        for bssid, essid, channel, privacy in zip(bssids, ssids, channels, secs):
+            if bssid in seen:
+                continue
+            if gps.lat == 0:
+                continue
+            if not gps.fix:
+                continue
+            with threading.Lock():
+                if bssid in seen:
+                    continue
+                seen.add(bssid)
+                with open(filename, 'a', newline='') as f:
+                    w = csv.writer(f)
+                    w.writerow([
+                        bssid,
+                        essid,
+                        f'[{privacy}]',
+                        gps.time,
+                        channel,
+                        gps.lat,
+                        gps.lon,
+                        gps.alt,
+                        gps.get_range_of_position,
+                        'WIFI',
+                    ])
+
+        
 def main(stdscr):
-    global log_satellites
+    global start_idx, log_satellites
     bear, head = gps.get_head_str
     rows, cols = stdscr.getmaxyx()
     curses.start_color()
@@ -204,7 +290,7 @@ def main(stdscr):
         exit()
     #==================MAIN DATA BOX========================#
     try:
-        main_box = curses.newwin(17, 38, 15, int(cols/2 - 38))
+        main_box = curses.newwin(17, 34, 1, 1)
         main_box.attron(curses.color_pair(2))
         main_box.box()
         main_box.attroff(curses.color_pair(2))
@@ -219,7 +305,7 @@ def main(stdscr):
             main_box.box()
             main_box.attroff(curses.color_pair(2))
             
-            main_box.addstr(1,1, " Current gps location: ".center(36), curses.color_pair(1))
+            main_box.addstr(1,1, " Current gps location: ".center(32), curses.color_pair(1))
             main_box.addstr(2,2, "Longitude: ", curses.color_pair(3))
             main_box.addstr(2,2 + len("Longitude: "), f"{gps.lon}", curses.color_pair(4))
             main_box.addstr(3,2, "Latitude: ", curses.color_pair(3))
@@ -240,7 +326,7 @@ def main(stdscr):
             if gps.speederr < 50:
                 main_box.addstr(10,2 + len("speed error(m/s, km/h): "), f"{round(gps.speederr,1)}, {round(gps.speederr * 3.6,1)}", curses.color_pair(4))
             else:
-                main_box.addstr(10,2 + len("speed error(m/s, km/h): "), "Stationary", curses.color_pair(4))
+                main_box.addstr(10,2 + len("speed error(m/s, km/h): "), "Stnry", curses.color_pair(4))
             main_box.addstr(11,2, "Climb rate(m/s): ", curses.color_pair(3))
             main_box.addstr(11,2 + len("Climb rate(m/s): "), f"{gps.climb}", curses.color_pair(4))
             main_box.addstr(12,2, "Heading: ", curses.color_pair(3))
@@ -257,7 +343,7 @@ def main(stdscr):
             exit()
     #==================CURRENT TIME BOX======================#
     try:
-        time_box = curses.newwin(5, 38, 15, int(cols/2))
+        time_box = curses.newwin(5, 32, 1, 1+34)
         time_box.attron(curses.color_pair(2))
         time_box.box()
         time_box.attroff(curses.color_pair(2))
@@ -271,34 +357,16 @@ def main(stdscr):
             time_box.box()
             time_box.attroff(curses.color_pair(2))
 
-            time_box.addstr(1, 1, " Current GPS time(UTC): ".center(36), curses.color_pair(1))
+            time_box.addstr(1, 1, " Current GPS time(UTC): ".center(30), curses.color_pair(1))
             time_box.addstr(2, 2, f"{gps.time}", curses.color_pair(4))
             time_box.addstr(3, 2, f"Time error(s): ", curses.color_pair(3))
             time_box.addstr(3, 2+len("time error(s): "), f"{gps.timeerr}", curses.color_pair(4))
         except Exception:
             print("Error printing too screen, perhaps your terminal is too small :( time show")
-    #===================HEADER TEXT BOX======================#
-    try:
-        text_box = curses.newwin(14, cols - 2, 1, 1)
-
-        text_box.addstr(1, 0, " ██████╗ ██████╗ ███████╗ ".center(cols), curses.color_pair(5))
-        text_box.addstr(2, 0, "██╔════╝ ██╔══██╗██╔════╝ ".center(cols), curses.color_pair(5))
-        text_box.addstr(3, 0, "██║  ███╗██████╔╝███████╗ ".center(cols), curses.color_pair(5))
-        text_box.addstr(4, 0, "██║   ██║██╔═══╝ ╚════██║ ".center(cols), curses.color_pair(5))
-        text_box.addstr(5, 0, "╚██████╔╝██║     ███████║ ".center(cols), curses.color_pair(5))
-        text_box.addstr(6, 0, " ╚═════╝ ╚═╝     ╚══════╝ ".center(cols), curses.color_pair(5))
-        text_box.addstr(7, 0, "██╗      ██████╗  ██████╗ █████╗ ████████╗██╗ ██████╗ ███╗   ██╗ ".center(cols), curses.color_pair(5))
-        text_box.addstr(8, 0, "██║     ██╔═══██╗██╔════╝██╔══██╗╚══██╔══╝██║██╔═══██╗████╗  ██║ ".center(cols), curses.color_pair(5))
-        text_box.addstr(9, 0, "██║     ██║   ██║██║     ███████║   ██║   ██║██║   ██║██╔██╗ ██║ ".center(cols), curses.color_pair(5))
-        text_box.addstr(10,0, "██║     ██║   ██║██║     ██╔══██║   ██║   ██║██║   ██║██║╚██╗██║ ".center(cols), curses.color_pair(5))
-        text_box.addstr(11,0, "███████╗╚██████╔╝╚██████╗██║  ██║   ██║   ██║╚██████╔╝██║ ╚████║ ".center(cols), curses.color_pair(5))
-        text_box.addstr(12,0, "╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝ ".center(cols), curses.color_pair(5))
-    except Exception:
-        pass
 
     #==================SATELLITE INFO BOX===================#
     try:
-        found_satelites_box = curses.newwin(12, 38, 20, int(cols/2))
+        found_satelites_box = curses.newwin(12, 32, 6, 1+34)
         found_satelites_box.attron(curses.color_pair(2))
         found_satelites_box.box()
         found_satelites_box.attroff(curses.color_pair(2))
@@ -313,7 +381,7 @@ def main(stdscr):
             found_satelites_box.box()
             found_satelites_box.attroff(curses.color_pair(2))
 
-            found_satelites_box.addstr(1, 1, " Satelites found: ".center(36), curses.color_pair(1))
+            found_satelites_box.addstr(1, 1, " Satelites found: ".center(30), curses.color_pair(1))
             i = 3
             if (fix):
                 sat = get_satelite_info()
@@ -332,7 +400,7 @@ def main(stdscr):
                     found_satelites_box.addstr(2, 6, "SNR",curses.color_pair(3))
                     found_satelites_box.addstr(2 , 11, "USED",curses.color_pair(3))
                     found_satelites_box.addstr(2, 18, "CONST",curses.color_pair(3))
-                    for prn, used, snr, gnssid in sat:
+                    for prn, used, snr, gnssid in sat[start_idx:]:
                         found_satelites_box.addstr(i, 2, f"{prn}  ",curses.color_pair(4))
                         found_satelites_box.addstr(i, 6, f"{int(snr)}dB  ", curses.color_pair(4))
                         found_satelites_box.addstr(i, 11, f"{used}",curses.color_pair(4))
@@ -342,7 +410,7 @@ def main(stdscr):
                         else:
                             i = 3
                         if log_satellites:
-                            log_sats()
+                            log_sats(gps.lat, gps.lon)
             else:
                 found_satelites_box.addstr(3, 2, "N/A",curses.color_pair(4))
                 found_satelites_box.addstr(3, 6, "N/A",curses.color_pair(4))
@@ -351,50 +419,15 @@ def main(stdscr):
         except Exception:
             print("Error printing too screen, perhaps your terminal is too small :( satellites")
             exit()
-
-    #=======================KUKI THE CAT BOX=================================#
-    if (rows > 47 or force_cat) and use_cat:
-        try: 
-            cat_box = curses.newwin(15, 28, 27, 1)
-            cat_box.addstr(0, 0, r" _", curses.color_pair(7))
-            cat_box.addstr(1, 0, r" \`*-", curses.color_pair(7))
-            cat_box.addstr(2, 0, r" )  _`-.", curses.color_pair(7))
-            cat_box.addstr(3, 0, r" .  : `. .", curses.color_pair(7))
-            cat_box.addstr(4, 0, r" : _   '  \.", curses.color_pair(7))
-            cat_box.addstr(5, 0, r" ; *` _.   `*-._ ", curses.color_pair(7))
-            cat_box.addstr(6, 0, r" `-.-'          `-.", curses.color_pair(7))
-            cat_box.addstr(7, 0, r"   ; KUKI  `       `.", curses.color_pair(7))
-            cat_box.addstr(8, 0, r"   :.       .        \.", curses.color_pair(7))
-            cat_box.addstr(9, 0, r"   . \  .   :   .-'   .", curses.color_pair(7))
-            cat_box.addstr(10, 0, r"   '  `+.;  ;  '      :",curses.color_pair(7))
-            cat_box.addstr(11, 0, r"   :  '  |    ;       ;-.",curses.color_pair(7))
-            cat_box.addstr(12, 0, r"   ; '   : :`-:     _.`* ;",curses.color_pair(7))
-            cat_box.addstr(13, 0, r".*' /  .*' ; .*`- +'  `*'",curses.color_pair(7))
-            cat_box.addstr(14, 0, r"`*-*   `*-*  `*-*'",curses.color_pair(7))
-            #cat_box.addstr(4, 4 + len("    : _   '  \."), "KUKI", curses.color_pair(7))
-
-        except Exception:
-            print("Error printing too screen, perhaps your terminal is too small,\n you can try the version without the cat :(")
-            exit()
-
+            
     current_time = datetime.datetime.now()                      
     last_time_stamp = current_time.time()
-    status = curses.newwin(1, cols-2, rows - 2, 1)
-    status.attron(curses.color_pair(1))
-    status.addstr(0, 2, f"Last updated: {last_time_stamp}".ljust(cols - 7))
-    status.addstr(0, cols - 3 - len("Press q or Q to exit "), "Press q or Q to exit")
-    status.attroff(curses.color_pair(1))
-
     #===============SHOW ALL BOXES=========================#
     try:
         stdscr.noutrefresh()
         main_box.noutrefresh()
         time_box.noutrefresh()
-        text_box.noutrefresh()
         found_satelites_box.noutrefresh()
-        status.noutrefresh()
-        if (rows > 47 or force_cat) and use_cat:
-            cat_box.noutrefresh()
         curses.doupdate()
     except Exception:
         print("Error printing too screen, perhaps your terminal is too small :( updating")
@@ -410,12 +443,14 @@ def main(stdscr):
 
         #============UPDATE DELAY TO PREVENT CRASHES AND MALFUNCTIONS===============#
         if now - last_update >= 1:
+            
             last_time_stamp = current_time.time()
             last_update = now
             bear, head = gps.get_head_str
             if fix and gps.has_fix:
                 current_country = gps.get_country()
             
+        try:
             main_box.erase()
             draw_main_box()
             if fix:
@@ -423,14 +458,13 @@ def main(stdscr):
                 draw_satelite_info()
             time_box.erase()
             draw_time_box()
-            status.attron(curses.color_pair(1))
-            status.addstr(0, 2, f" Last updated: {last_time_stamp} ".ljust(cols - 7))
-            status.addstr(0, cols - 3 - len("Press q or Q to exit  "), "Press q or Q to exit ")
-            status.attroff(curses.color_pair(1))
-        try:
+            stdscr.erase()
+            stdscr.attron(curses.color_pair(2))
+            stdscr.box()
+            stdscr.attroff(curses.color_pair(2))
+            stdscr.noutrefresh()
             main_box.noutrefresh()
             time_box.noutrefresh()
-            status.noutrefresh()
             found_satelites_box.noutrefresh()
         except Exception:
             print("Error printing too screen, perhaps your terminal is too small :(")
@@ -441,6 +475,12 @@ def main(stdscr):
             stdscr.clear()
             os.system('clear')
             break
+        elif key == curses.KEY_UP:
+            if start_idx > 0:
+                start_idx -=1
+        elif key == curses.KEY_DOWN:
+            if start_idx < len(get_satelite_info()) - 5:
+                start_idx += 1
         curses.doupdate()
 
 if __name__ == "__main__":
@@ -456,9 +496,11 @@ if __name__ == "__main__":
     fix = gps.get_fix()
     gps_thread = threading.Thread(target=gps.update_fix, daemon=True)
     gps_thread.start()
+    scan_thread = threading.Thread(target=scan_aps,daemon=True)
+    scan_thread.start()
     curses.wrapper(main)
     gps.stop()
     if gps_thread:
         gps_thread.join(timeout=1)
-    
+       
     
