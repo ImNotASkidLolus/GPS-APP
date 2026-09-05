@@ -485,12 +485,8 @@ def main(stdscr):
 
 if __name__ == "__main__":
     argument_parser = argparse.ArgumentParser(description="COUNTRY GPS TOOL")
-    argument_parser.add_argument("-n", "--nocat", action="store_true", help="Hides the KUKI image from displaying")
-    argument_parser.add_argument("-f", "--forcecat", action="store_true", help="Force the cat to show up")
     argument_parser.add_argument("-l", "--log-satellites", action="store_true", help="Logs the satellites found to a file called satellites.txt")
     parsed_args = argument_parser.parse_args()
-    use_cat = not parsed_args.nocat
-    force_cat = parsed_args.forcecat
     log_satellites = parsed_args.log_satellites
     gps = gps_get()
     fix = gps.get_fix()

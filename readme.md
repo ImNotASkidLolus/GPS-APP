@@ -1,10 +1,4 @@
-# GPS APP FOR TERMINAL IN PYTHON
-
-The app was basically made for my hackberry and was not tested for other devices, but probably this code works for every system that will run gpsd(GPS daemon). Basically all unix based systems Mac, Linux, Free BSD. Please notify me for any issues of bugs to fix or maybe even features to add ;)<br>
-P.S. please note that the images might be outdated, but I try to keep them up to date
-
-<img src="./images/image.png" alt="main display image" width="1000px">
-<img src="./images/hackberry.jpeg" alt="main display image" width="500px">
+# GPS APP FOR TERMINAL IN PYTHON WITH DUAL-BAND WARDRIVING
 
 ## USAGE
 You have to have gps daemon installed(gpsd)
@@ -23,19 +17,7 @@ sudo apt install python3-gps
 To run you just use:
 ```bash
 python3 Country.py # or whatever you save this file as
+# if you want the app to log GPS satellites to a file use
+python3 Country.py -l
 ```
-## Options
-`-n, --nocat` - disables the display of the cat<br>
-`-f, --forcecat` - forces the cat to showup
-
-
-# WHAT'S WITH THE CAT?
-Thats my cat Kuki if you don't like him just use this:
-```bash
-python3 Country.py -n #or --nocat
-```
-Here is his photo<br>
-<img src="./images/cat.jpg" alt="cat photo" width ="400px">
-
-# WHY DID I MAKE THIS?
-I wanted to have a nice GPS app for my Hackberry Pi Zero
+This app automatically logs the wifi networks that it finds to a file called "log_{system_time}.csv"
